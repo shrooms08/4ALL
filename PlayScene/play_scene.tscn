@@ -1,0 +1,56 @@
+[gd_scene load_steps=10 format=3 uid="uid://dj2gvh7uw53s3"]
+
+[ext_resource type="Script" uid="uid://dkn6sbqe3f8iv" path="res://PlayScene/play_scene.gd" id="1_vfcvm"]
+[ext_resource type="PackedScene" uid="uid://2j1ltrvfhf02" path="res://Player/player.tscn" id="2_feovp"]
+[ext_resource type="Script" uid="uid://bhsb8k15poqqi" path="res://PlayScene/enemy_spawner.gd" id="3_bfj68"]
+[ext_resource type="PackedScene" uid="uid://ybrdxtmhgqv6" path="res://Enemies/Crawling Enemies/Worm/worm.tscn" id="4_bfj68"]
+[ext_resource type="PackedScene" uid="uid://66ywt3udtw03" path="res://LevelGenerator/level_generator.tscn" id="4_d45jc"]
+[ext_resource type="PackedScene" uid="uid://cq2dq281hhx3u" path="res://Enemies/Flyin' Enemies/Bat/bat.tscn" id="5_wcn75"]
+[ext_resource type="PackedScene" uid="uid://bu124yga7qvvm" path="res://Chunks/StartChunk/start_chunk.tscn" id="7_2amxo"]
+[ext_resource type="FontFile" uid="uid://dtiujgu3wn57w" path="res://4all/Pixeled.ttf" id="7_t8b1b"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_2amxo"]
+font = ExtResource("7_t8b1b")
+font_size = 30
+
+[node name="PlayScene" type="Node2D"]
+script = ExtResource("1_vfcvm")
+metadata/_edit_horizontal_guides_ = [192.0]
+
+[node name="Player" parent="." instance=ExtResource("2_feovp")]
+position = Vector2(38, 166)
+scale = Vector2(0.32, 0.32)
+
+[node name="EnemySpawner" type="Node2D" parent="."]
+script = ExtResource("3_bfj68")
+enemy_scenes = Array[PackedScene]([ExtResource("4_bfj68"), ExtResource("5_wcn75")])
+
+[node name="LevelGenerator" parent="." instance=ExtResource("4_d45jc")]
+start_chunk_scene = ExtResource("7_2amxo")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="BlackOverlay" type="ColorRect" parent="CanvasLayer"]
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 1)
+
+[node name="GameTitle" type="Label" parent="CanvasLayer"]
+visible = false
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -60.0
+offset_top = -42.0
+offset_right = 60.0
+offset_bottom = 42.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "4ALL"
+label_settings = SubResource("LabelSettings_2amxo")

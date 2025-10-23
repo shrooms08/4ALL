@@ -1,0 +1,24 @@
+[gd_scene load_steps=4 format=3 uid="uid://bjaf0ikfdbtui"]
+
+[ext_resource type="Script" uid="uid://d4etvxox1uguy" path="res://BulletBase/bullet_base.gd" id="1_rir7w"]
+[ext_resource type="Texture2D" uid="uid://ixv37pvqikjh" path="res://4all/Purple Effect and Bullet 16x16.png" id="2_jj404"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_jj404"]
+radius = 8.0
+
+[node name="BulletBase" type="Area2D"]
+rotation = 1.5707964
+collision_layer = 8
+collision_mask = 5
+script = ExtResource("1_rir7w")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("2_jj404")
+region_enabled = true
+region_rect = Rect2(225.03278, 17.123081, 14.256805, 13.959778)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_jj404")
+
+[connection signal="area_entered" from="." to="." method="_on_area_entered"]
+[connection signal="body_entered" from="." to="." method="_on_body_entered"]

@@ -1,0 +1,14 @@
+[gd_scene load_steps=4 format=3 uid="uid://co78rs1idpbje"]
+
+[ext_resource type="PackedScene" uid="uid://bjaf0ikfdbtui" path="res://BulletBase/bullet_base.tscn" id="1_5i5md"]
+[ext_resource type="Script" uid="uid://d137oye3q2a8x" path="res://BulletBase/HeavyBullet/heavy_bullet.gd" id="2_77ab1"]
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_77ab1"]
+load_path = "res://.godot/imported/Purple Effect and Bullet 16x16.png-c68045e9df0d1a3f14281b2769715999.ctex"
+
+[node name="HeavyBullet" instance=ExtResource("1_5i5md")]
+script = ExtResource("2_77ab1")
+
+[node name="Sprite2D" parent="." index="0"]
+texture = SubResource("CompressedTexture2D_77ab1")
+region_rect = Rect2(159.1724, 126.2171, 17.58191, 19.499954)

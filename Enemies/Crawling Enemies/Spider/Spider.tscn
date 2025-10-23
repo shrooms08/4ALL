@@ -1,0 +1,106 @@
+[gd_scene load_steps=14 format=3 uid="uid://fgtnr3g541uc"]
+
+[ext_resource type="PackedScene" uid="uid://bld50hpqt6t1h" path="res://BaseEnemy/base_enemy.tscn" id="1_crxxf"]
+[ext_resource type="Script" uid="uid://mvcwo6wdt3gt" path="res://Enemies/Crawling Enemies/Spider/spider.gd" id="2_5fjj8"]
+[ext_resource type="Texture2D" uid="uid://73x5gvcibs4u" path="res://4all/Enemies/spritesheet/skull_beetle_blue/spritesheet.png" id="3_5fjj8"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_6x5wl"]
+atlas = ExtResource("3_5fjj8")
+region = Rect2(0, 96, 96, 48)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_jnl4e"]
+atlas = ExtResource("3_5fjj8")
+region = Rect2(96, 96, 96, 48)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_jbrql"]
+atlas = ExtResource("3_5fjj8")
+region = Rect2(192, 96, 96, 48)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_8a2m8"]
+atlas = ExtResource("3_5fjj8")
+region = Rect2(288, 96, 96, 48)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_abvho"]
+atlas = ExtResource("3_5fjj8")
+region = Rect2(384, 96, 96, 48)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_0r7f6"]
+atlas = ExtResource("3_5fjj8")
+region = Rect2(480, 96, 96, 48)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_l1e4j"]
+atlas = ExtResource("3_5fjj8")
+region = Rect2(576, 96, 96, 48)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ckhop"]
+atlas = ExtResource("3_5fjj8")
+region = Rect2(672, 96, 96, 48)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_j27v1"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_6x5wl")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_jnl4e")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_jbrql")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_8a2m8")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_abvho")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_0r7f6")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_l1e4j")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ckhop")
+}],
+"loop": true,
+"name": &"crawl",
+"speed": 10.0
+}]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_pklnw"]
+radius = 15.0
+height = 62.0
+
+[node name="Spider" instance=ExtResource("1_crxxf")]
+scale = Vector2(0.3, 0.3)
+collision_mask = 9
+script = ExtResource("2_5fjj8")
+crawl_speed = 50.0
+contact_damage = 8.0
+ray_length = 30.0
+turn_delay = 0.3
+wall_stick_distance = 50.0
+rotation_speed = 10.0
+sprite_base_rotation = 90.0
+
+[node name="Sprite2D" parent="." index="0"]
+visible = false
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." index="1"]
+sprite_frames = SubResource("SpriteFrames_j27v1")
+animation = &"crawl"
+autoplay = "crawl"
+
+[node name="CollisionShape2D" parent="." index="2"]
+position = Vector2(-4, -2)
+shape = SubResource("CapsuleShape2D_pklnw")
+
+[node name="CollisionShape2D" parent="DetectionArea" index="0"]
+position = Vector2(-1, -1)
+
+[node name="AttackArea" parent="." index="4"]
+position = Vector2(4, 100)
+
+[node name="CollisionShape2D" parent="AttackArea" index="0"]
+position = Vector2(-8, -102)

@@ -1,0 +1,15 @@
+[gd_scene load_steps=2 format=3 uid="uid://xb3eomqsgwjx"]
+
+[ext_resource type="Script" uid="uid://c1v11iidlb8b1" path="res://BulletPickupBase/bullet_pickup_base.gd" id="1_u8lk2"]
+
+[node name="BulletPickupBase" type="Area2D"]
+collision_layer = 16
+collision_mask = 2
+script = ExtResource("1_u8lk2")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(-18, 7.5)
+
+[connection signal="body_entered" from="." to="." method="_on_body_entered"]

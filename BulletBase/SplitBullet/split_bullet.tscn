@@ -1,0 +1,26 @@
+[gd_scene load_steps=5 format=3 uid="uid://46b0k5n0ueo8"]
+
+[ext_resource type="PackedScene" uid="uid://bjaf0ikfdbtui" path="res://BulletBase/bullet_base.tscn" id="1_q2wrx"]
+[ext_resource type="Script" uid="uid://bgmfym3fmmfre" path="res://BulletBase/SplitBullet/split_bullet.gd" id="2_rw6wl"]
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_rw6wl"]
+load_path = "res://.godot/imported/Purple Effect and Bullet 16x16.png-c68045e9df0d1a3f14281b2769715999.ctex"
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_haera"]
+radius = 3.0
+height = 20.0
+
+[node name="SplitBullet" instance=ExtResource("1_q2wrx")]
+script = ExtResource("2_rw6wl")
+split_count = 3
+split_angle_spread = 0.7853981633974483
+
+[node name="Sprite2D" parent="." index="0"]
+rotation = 4.712389
+texture = SubResource("CompressedTexture2D_rw6wl")
+region_rect = Rect2(514.00757, 182.79893, 12.786865, 24.934372)
+
+[node name="CollisionShape2D" parent="." index="1"]
+position = Vector2(1, -4.371139e-08)
+rotation = 1.5707964
+shape = SubResource("CapsuleShape2D_haera")

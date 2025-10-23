@@ -1,0 +1,92 @@
+[gd_scene load_steps=14 format=3 uid="uid://ybrdxtmhgqv6"]
+
+[ext_resource type="PackedScene" uid="uid://bld50hpqt6t1h" path="res://BaseEnemy/base_enemy.tscn" id="1_uaako"]
+[ext_resource type="Script" uid="uid://dr7v6gyo7woqh" path="res://Enemies/Crawling Enemies/Worm/worm.gd" id="2_3284o"]
+[ext_resource type="Texture2D" uid="uid://c6b32m5yt3q6m" path="res://4all/Enemies/spritesheet/leech_gray/spritesheet.png" id="3_4lyaw"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_yhjn3"]
+atlas = ExtResource("3_4lyaw")
+region = Rect2(0, 36, 32, 18)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_l07gb"]
+atlas = ExtResource("3_4lyaw")
+region = Rect2(32, 36, 32, 18)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_i0deg"]
+atlas = ExtResource("3_4lyaw")
+region = Rect2(64, 36, 32, 18)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_xds5e"]
+atlas = ExtResource("3_4lyaw")
+region = Rect2(96, 36, 32, 18)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_xvort"]
+atlas = ExtResource("3_4lyaw")
+region = Rect2(128, 36, 32, 18)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_pwo40"]
+atlas = ExtResource("3_4lyaw")
+region = Rect2(160, 36, 32, 18)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_g102x"]
+atlas = ExtResource("3_4lyaw")
+region = Rect2(192, 36, 32, 18)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_p86on"]
+atlas = ExtResource("3_4lyaw")
+region = Rect2(224, 36, 32, 18)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_71ecj"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_yhjn3")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_l07gb")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_i0deg")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_xds5e")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_xvort")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_pwo40")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_g102x")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_p86on")
+}],
+"loop": true,
+"name": &"crawl",
+"speed": 10.0
+}]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_4lyaw"]
+radius = 6.0
+height = 20.0
+
+[node name="Worm" instance=ExtResource("1_uaako")]
+collision_mask = 11
+script = ExtResource("2_3284o")
+crawl_speed = 30.0
+contact_damage = 5.0
+direction_change_delay = 0.5
+
+[node name="Sprite2D" parent="." index="0"]
+visible = false
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." index="1"]
+sprite_frames = SubResource("SpriteFrames_71ecj")
+animation = &"crawl"
+autoplay = "crawl"
+
+[node name="CollisionShape2D" parent="." index="2"]
+rotation = 1.5707964
+shape = SubResource("CapsuleShape2D_4lyaw")

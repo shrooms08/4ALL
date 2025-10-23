@@ -1,0 +1,21 @@
+[gd_scene load_steps=6 format=3 uid="uid://bqaow80xpw1ts"]
+
+[ext_resource type="PackedScene" uid="uid://xb3eomqsgwjx" path="res://BulletPickupBase/bullet_pickup_base.tscn" id="1_4buue"]
+[ext_resource type="Script" uid="uid://b88ckpbliqpta" path="res://BulletPickupBase/SplitPickup/split_pickup.gd" id="2_4vcem"]
+[ext_resource type="PackedScene" uid="uid://46b0k5n0ueo8" path="res://BulletBase/SplitBullet/split_bullet.tscn" id="3_ctn6n"]
+[ext_resource type="Texture2D" uid="uid://bvcm5vpjg5nrg" path="res://4all/4all character.png" id="3_mcru1"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_ctn6n"]
+size = Vector2(60, 62)
+
+[node name="SplitPickup" instance=ExtResource("1_4buue")]
+scale = Vector2(0.2, 0.2)
+script = ExtResource("2_4vcem")
+bullet_scene = ExtResource("3_ctn6n")
+
+[node name="Sprite2D" parent="." index="0"]
+texture = ExtResource("3_mcru1")
+
+[node name="CollisionShape2D" parent="." index="1"]
+position = Vector2(0, 0)
+shape = SubResource("RectangleShape2D_ctn6n")

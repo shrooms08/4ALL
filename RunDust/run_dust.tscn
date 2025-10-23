@@ -1,0 +1,26 @@
+[gd_scene load_steps=5 format=3 uid="uid://cxk2cw5y05u8f"]
+
+[ext_resource type="Texture2D" uid="uid://b1uslyd0mgm01" path="res://4all/run dust.png" id="1_avfk8"]
+
+[sub_resource type="Gradient" id="Gradient_eh06s"]
+colors = PackedColorArray(1, 1, 1, 0.56078434, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_g5m8x"]
+gradient = SubResource("Gradient_eh06s")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_y3joe"]
+particle_flag_disable_z = true
+emission_shape = 1
+emission_sphere_radius = 6.0
+spread = 35.0
+gravity = Vector3(-10, 0, 0)
+scale_min = 0.099999994
+scale_max = 0.29999998
+color_ramp = SubResource("GradientTexture1D_g5m8x")
+
+[node name="RunDust" type="GPUParticles2D"]
+texture = ExtResource("1_avfk8")
+lifetime = 0.6
+explosiveness = 0.8
+randomness = 0.7
+process_material = SubResource("ParticleProcessMaterial_y3joe")

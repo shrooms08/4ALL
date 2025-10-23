@@ -1,0 +1,37 @@
+[gd_scene load_steps=7 format=3 uid="uid://b2hw1lx4xdjk2"]
+
+[ext_resource type="Texture2D" uid="uid://b2pmr4yocbyie" path="res://4all/dust/dust1.png" id="1_3sg85"]
+[ext_resource type="Texture2D" uid="uid://cbx7pphehgyl" path="res://4all/dust/dust2.png" id="2_pdobd"]
+[ext_resource type="Texture2D" uid="uid://bdiidt5uqgegw" path="res://4all/dust/dust3.png" id="3_qnqef"]
+[ext_resource type="Texture2D" uid="uid://bwgphfpm824pt" path="res://4all/dust/dust4.png" id="4_fec81"]
+[ext_resource type="Script" uid="uid://q4brgrr2urx3" path="res://JumpParticles/jump_particles.gd" id="5_pdobd"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_4oqts"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("1_3sg85")
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_pdobd")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_qnqef")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_fec81")
+}],
+"loop": false,
+"name": &"default",
+"speed": 10.0
+}]
+
+[node name="JumpParticles" type="AnimatedSprite2D"]
+texture_filter = 1
+sprite_frames = SubResource("SpriteFrames_4oqts")
+autoplay = "default"
+frame = 3
+frame_progress = 1.0
+script = ExtResource("5_pdobd")
+
+[connection signal="animation_finished" from="." to="." method="_on_animation_finished"]

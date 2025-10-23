@@ -1,0 +1,4 @@
+bone_statue_projectile/frame0000.png = 0 0 22 16
+bone_statue_projectile/frame0001.png = 22 0 22 16
+bone_statue_projectile/frame0002.png = 44 0 22 16
+bone_statue_projectile/frame0003.png = 66 0 22 16

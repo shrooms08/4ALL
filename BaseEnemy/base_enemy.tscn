@@ -1,0 +1,35 @@
+[gd_scene load_steps=6 format=3 uid="uid://bld50hpqt6t1h"]
+
+[ext_resource type="Script" uid="uid://clt41v1i3a1xp" path="res://BaseEnemy/base_enemy.gd" id="1_cbj42"]
+[ext_resource type="Texture2D" uid="uid://cpf0xk3f7v7em" path="res://4all/4all enemy.png" id="1_p6ug8"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_cbj42"]
+size = Vector2(26, 26)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_6qmfk"]
+size = Vector2(67, 38)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_o3m8p"]
+radius = 25.019993
+
+[node name="BaseEnemy" type="CharacterBody2D"]
+collision_layer = 4
+collision_mask = 13
+script = ExtResource("1_cbj42")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+scale = Vector2(0.4, 0.4)
+texture = ExtResource("1_p6ug8")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_cbj42")
+
+[node name="DetectionArea" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="DetectionArea"]
+shape = SubResource("RectangleShape2D_6qmfk")
+
+[node name="AttackArea" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="AttackArea"]
+shape = SubResource("CircleShape2D_o3m8p")

@@ -1,0 +1,25 @@
+[gd_scene load_steps=5 format=3 uid="uid://diyindi4dayxx"]
+
+[ext_resource type="PackedScene" uid="uid://bjaf0ikfdbtui" path="res://BulletBase/bullet_base.tscn" id="1_d1omd"]
+[ext_resource type="Script" uid="uid://7fpin1mhrkth" path="res://BulletBase/ExplosiveBullet/explosive_bullet.gd" id="2_v1ffk"]
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_v1ffk"]
+load_path = "res://.godot/imported/spritesheet.png-80209a154e60c8b582f81ed76c540807.ctex"
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_v1ffk"]
+radius = 4.0
+height = 18.0
+
+[node name="ExplosiveBullet" instance=ExtResource("1_d1omd")]
+scale = Vector2(0.7, 0.7)
+script = ExtResource("2_v1ffk")
+explosion_radius = 100.0
+explosion_damage = 30.0
+
+[node name="Sprite2D" parent="." index="0"]
+texture = SubResource("CompressedTexture2D_v1ffk")
+region_rect = Rect2(44.921883, -3.709015, 24.922432, 22.5)
+
+[node name="CollisionShape2D" parent="." index="1"]
+rotation = 1.5707964
+shape = SubResource("CapsuleShape2D_v1ffk")

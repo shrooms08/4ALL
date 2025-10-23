@@ -1,0 +1,19 @@
+[gd_scene load_steps=4 format=3 uid="uid://jenuqmotxw5j"]
+
+[ext_resource type="PackedScene" uid="uid://bjaf0ikfdbtui" path="res://BulletBase/bullet_base.tscn" id="1_i3us8"]
+[ext_resource type="Script" uid="uid://cd6hwprvi4bxa" path="res://BulletBase/HomingBullet/homing_bullet.gd" id="2_lteft"]
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_lteft"]
+load_path = "res://.godot/imported/Purple Effect and Bullet 16x16.png-c68045e9df0d1a3f14281b2769715999.ctex"
+
+[node name="HomingBullet" instance=ExtResource("1_i3us8")]
+script = ExtResource("2_lteft")
+turn_speed = 5.0
+detection_radius = 300.0
+
+[node name="Sprite2D" parent="." index="0"]
+texture = SubResource("CompressedTexture2D_lteft")
+region_rect = Rect2(31.762009, 67.32751, 16.62291, 10.549149)
+
+[node name="CollisionShape2D" parent="." index="1"]
+position = Vector2(1, -4.371139e-08)

@@ -1,0 +1,20 @@
+[gd_scene load_steps=4 format=3 uid="uid://qogahs2o7e38"]
+
+[ext_resource type="Script" uid="uid://dqwf4rgw4ya3f" path="res://BreakableTiles/breakable_tiles.gd" id="1_alonh"]
+[ext_resource type="Texture2D" uid="uid://8gjen3lkkihf" path="res://4all/4all Tileset/Tilemap/monochrome_tilemap_transparent.png" id="1_brgbt"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_alonh"]
+size = Vector2(16, 16)
+
+[node name="BreakableTiles" type="StaticBody2D"]
+script = ExtResource("1_alonh")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("1_brgbt")
+region_enabled = true
+region_rect = Rect2(305.88275, 272.064, 16.070587, 15.92038)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_alonh")
+
+[node name="GPUParticles2D" type="GPUParticles2D" parent="."]

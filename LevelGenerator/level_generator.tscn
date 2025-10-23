@@ -1,0 +1,18 @@
+[gd_scene load_steps=12 format=3 uid="uid://66ywt3udtw03"]
+
+[ext_resource type="Script" uid="uid://bvdjvv0nun7s" path="res://LevelGenerator/level_generator.gd" id="1_ids4g"]
+[ext_resource type="PackedScene" uid="uid://b26f5gmusdvec" path="res://Chunks/Chunk01/chunk_01.tscn" id="2_0rgcj"]
+[ext_resource type="PackedScene" uid="uid://cxba7yhhxjme2" path="res://Chunks/Chunk02/chunk_02.tscn" id="3_bx2d1"]
+[ext_resource type="PackedScene" uid="uid://dp6xw548vd77p" path="res://Chunks/Chunk03/chunk_03.tscn" id="4_ro4u5"]
+[ext_resource type="PackedScene" uid="uid://crtvo1kuiodhn" path="res://Chunks/Chunk04/chunk_04.tscn" id="5_hbwxo"]
+[ext_resource type="PackedScene" uid="uid://ceqqu2aieg5pq" path="res://Chunks/Chunk05/chunk_05.tscn" id="6_twils"]
+[ext_resource type="PackedScene" uid="uid://duul17mdp1nib" path="res://Chunks/Chunk06/chunk_06.tscn" id="7_twils"]
+[ext_resource type="PackedScene" uid="uid://cqci3wddupv10" path="res://Chunks/Chunk07/chunk_07.tscn" id="8_oxork"]
+[ext_resource type="PackedScene" uid="uid://cr5wrwjju4bc7" path="res://Chunks/Chunk08/chunk_08.tscn" id="9_s6xof"]
+[ext_resource type="PackedScene" uid="uid://kjsmlujaavh6" path="res://Chunks/Chunk09/chunk_09.tscn" id="10_o1ggt"]
+[ext_resource type="PackedScene" uid="uid://bgyxe83jk4pyb" path="res://Chunks/Chunk10/chunk_10.tscn" id="11_1hyd7"]
+
+[node name="LevelGenerator" type="Node2D"]
+script = ExtResource("1_ids4g")
+chunk_scenes = Array[PackedScene]([ExtResource("11_1hyd7"), ExtResource("2_0rgcj"), ExtResource("10_o1ggt"), ExtResource("3_bx2d1"), ExtResource("9_s6xof"), ExtResource("4_ro4u5")])
+special_chunk_scenes = Array[PackedScene]([ExtResource("5_hbwxo"), ExtResource("6_twils"), ExtResource("7_twils"), ExtResource("8_oxork")])
