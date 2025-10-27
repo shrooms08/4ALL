@@ -1,0 +1,65 @@
+[gd_scene load_steps=9 format=3 uid="uid://di5kkrqo6xunr"]
+
+[ext_resource type="Script" uid="uid://c3vr6cekwra46" path="res://Gem/gem.gd" id="1_x4t1x"]
+[ext_resource type="Texture2D" uid="uid://egpqvlp84hny" path="res://4all/tile_0062.png" id="2_qw0to"]
+[ext_resource type="Texture2D" uid="uid://bsckv2eij343i" path="res://4all/tile_0001.png" id="3_cu34n"]
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_qw0to"]
+friction = 0.3
+bounce = 0.6
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_wm46f"]
+atlas = ExtResource("2_qw0to")
+region = Rect2(0, 0, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_e56nj"]
+atlas = ExtResource("3_cu34n")
+region = Rect2(0, 0, 16, 16)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_qh3dm"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_wm46f")
+}],
+"loop": false,
+"name": &"Large",
+"speed": 10.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_e56nj")
+}],
+"loop": false,
+"name": &"small",
+"speed": 10.0
+}]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_lc7pa"]
+radius = 4.0
+height = 12.0
+
+[node name="Gem" type="RigidBody2D"]
+collision_layer = 32
+collision_mask = 7
+physics_material_override = SubResource("PhysicsMaterial_qw0to")
+linear_damp = 0.2
+script = ExtResource("1_x4t1x")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+scale = Vector2(0.5, 0.5)
+sprite_frames = SubResource("SpriteFrames_qh3dm")
+animation = &"Large"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+scale = Vector2(0.5, 0.5)
+shape = SubResource("CapsuleShape2D_lc7pa")
+
+[node name="CollectParticles" type="CPUParticles2D" parent="."]
+visible = false
+
+[node name="CollectSound" type="AudioStreamPlayer2D" parent="."]
+
+[node name="BounceSound" type="AudioStreamPlayer2D" parent="."]

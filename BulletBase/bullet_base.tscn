@@ -4,7 +4,7 @@
 [ext_resource type="Texture2D" uid="uid://ixv37pvqikjh" path="res://4all/Purple Effect and Bullet 16x16.png" id="2_jj404"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_jj404"]
-radius = 8.0
+radius = 5.0
 
 [node name="BulletBase" type="Area2D"]
 rotation = 1.5707964

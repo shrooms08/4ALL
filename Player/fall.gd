@@ -28,7 +28,8 @@ func update(delta: float) -> void:
 	#Player.handle_landing()
 	if Player.is_on_floor():
 		Player.jumps = 0
-		Player.current_ammo = Player.MAX_AMMO
+		Player.current_ammo = Player.max_ammo 
+		Player.emit_signal("ammo_changed", Player.current_ammo, Player.max_ammo)
 		Player.change_state(States.idle)
 		return
 	

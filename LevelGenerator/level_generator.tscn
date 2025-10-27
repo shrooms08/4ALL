@@ -1,7 +1,8 @@
-[gd_scene load_steps=12 format=3 uid="uid://66ywt3udtw03"]
+[gd_scene load_steps=13 format=3 uid="uid://66ywt3udtw03"]
 
 [ext_resource type="Script" uid="uid://bvdjvv0nun7s" path="res://LevelGenerator/level_generator.gd" id="1_ids4g"]
 [ext_resource type="PackedScene" uid="uid://b26f5gmusdvec" path="res://Chunks/Chunk01/chunk_01.tscn" id="2_0rgcj"]
+[ext_resource type="PackedScene" uid="uid://bu124yga7qvvm" path="res://Chunks/StartChunk/start_chunk.tscn" id="2_y65wu"]
 [ext_resource type="PackedScene" uid="uid://cxba7yhhxjme2" path="res://Chunks/Chunk02/chunk_02.tscn" id="3_bx2d1"]
 [ext_resource type="PackedScene" uid="uid://dp6xw548vd77p" path="res://Chunks/Chunk03/chunk_03.tscn" id="4_ro4u5"]
 [ext_resource type="PackedScene" uid="uid://crtvo1kuiodhn" path="res://Chunks/Chunk04/chunk_04.tscn" id="5_hbwxo"]
@@ -14,5 +15,6 @@
 
 [node name="LevelGenerator" type="Node2D"]
 script = ExtResource("1_ids4g")
-chunk_scenes = Array[PackedScene]([ExtResource("11_1hyd7"), ExtResource("2_0rgcj"), ExtResource("10_o1ggt"), ExtResource("3_bx2d1"), ExtResource("9_s6xof"), ExtResource("4_ro4u5")])
+start_chunk_scene = ExtResource("2_y65wu")
+chunk_scenes = Array[PackedScene]([ExtResource("2_0rgcj"), ExtResource("3_bx2d1"), ExtResource("4_ro4u5"), ExtResource("9_s6xof"), ExtResource("10_o1ggt"), ExtResource("11_1hyd7")])
 special_chunk_scenes = Array[PackedScene]([ExtResource("5_hbwxo"), ExtResource("6_twils"), ExtResource("7_twils"), ExtResource("8_oxork")])

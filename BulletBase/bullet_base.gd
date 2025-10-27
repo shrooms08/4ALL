@@ -8,6 +8,7 @@ const MAX_DISTANCE = 300
 
 @export var damage: float = 10.0
 @export var knockback_force: float = 5.0
+@export var max_ammo: int = 8
 
 var direction = Vector2.DOWN
 var velocity = Vector2.ZERO
@@ -126,6 +127,16 @@ func on_hit_tile(tile: Node2D) -> void:
 	queue_free()
 
 func on_hit_enemy(enemy: Node2D) -> void:
+	# Register hit for accuracy tracking
+	GameManager.register_hit()
+	
+	# Register kill with combo if it kills the enemy
+	if enemy.has_method("take_damage"):
+		enemy.take_damage(damage)
+		
+		# Check if enemy died and register with combo
+		if enemy.has_method("is_alive") and not enemy.is_alive():
+			ComboManagr.register_shot_kill()
 	queue_free()
 
 func on_hit_obstacle(obstacle: Node2D) -> void:

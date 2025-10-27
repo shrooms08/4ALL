@@ -353,6 +353,7 @@ size = Vector2(43.499996, 3)
 scale = Vector2(0.3, 0.3)
 collision_layer = 2
 collision_mask = 5
+up_direction = Vector2(-0.079745226, -0.9968153)
 script = ExtResource("1_4ntmi")
 bullet_scene = ExtResource("2_7emwf")
 jump_particle_scene = ExtResource("3_5htga")

@@ -1,9 +1,13 @@
-[gd_scene load_steps=10 format=4 uid="uid://ceqqu2aieg5pq"]
+[gd_scene load_steps=14 format=4 uid="uid://ceqqu2aieg5pq"]
 
 [ext_resource type="Texture2D" uid="uid://dtlm84p262rea" path="res://4all/4all Tileset/Tilemap/monochrome_tilemap_packed.png" id="1_p51yp"]
 [ext_resource type="Script" uid="uid://cw540ugi1t66f" path="res://Chunks/Chunk05/chunk_05.gd" id="1_pddap"]
 [ext_resource type="Texture2D" uid="uid://b1t8tww3dy52c" path="res://4all/4all Tileset/Tilemap/monochrome_tilemap_transparent_packed.png" id="2_d41ot"]
+[ext_resource type="PackedScene" uid="uid://cq2dq281hhx3u" path="res://Enemies/Flyin' Enemies/Bat/bat.tscn" id="2_e2lg4"]
 [ext_resource type="Script" uid="uid://b4xjjwimvst0s" path="res://Chunks/Chunk05/tile_map_layer.gd" id="3_ro1ak"]
+[ext_resource type="PackedScene" uid="uid://ybrdxtmhgqv6" path="res://Enemies/Crawling Enemies/Worm/worm.tscn" id="3_xl13b"]
+[ext_resource type="Texture2D" uid="uid://x00ydnsoqyiu" path="res://4all/Door.png" id="5_rvxa2"]
+[ext_resource type="Script" uid="uid://b1uf4eeohq0hb" path="res://Chunks/Chunk05/enemy_spawner.gd" id="6_nqfr2"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_pddap"]
 texture = ExtResource("1_p51yp")
@@ -900,3 +904,26 @@ collision_mask = 6
 position = Vector2(337, 407)
 rotation = 1.5707964
 shape = SubResource("CapsuleShape2D_pddap")
+
+[node name="Sprite2D" type="Sprite2D" parent="FreezeTrigger"]
+modulate = Color(1, 1, 1, 0.49411765)
+position = Vector2(217.99998, 397)
+rotation = 4.502949
+scale = Vector2(0.9, 0.9)
+texture = ExtResource("5_rvxa2")
+
+[node name="EnemySpawner" type="Node2D" parent="."]
+script = ExtResource("6_nqfr2")
+enemy_scenes = Array[PackedScene]([ExtResource("3_xl13b"), ExtResource("2_e2lg4")])
+spawn_chance = 1.0
+
+[node name="SpawnPoints" type="Node2D" parent="EnemySpawner"]
+
+[node name="EnemySpawn1" type="Marker2D" parent="EnemySpawner/SpawnPoints"]
+position = Vector2(67, 146)
+
+[node name="EnemySpawn2" type="Marker2D" parent="EnemySpawner/SpawnPoints"]
+position = Vector2(175, 399)
+
+[node name="EnemySpawn3" type="Marker2D" parent="EnemySpawner/SpawnPoints"]
+position = Vector2(36, 406)

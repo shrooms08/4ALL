@@ -1,0 +1,153 @@
+[gd_scene load_steps=6 format=3 uid="uid://f56013n24gjy"]
+
+[ext_resource type="Script" uid="uid://dnwfj22hh0ksn" path="res://PauseMenu/pause_menu.gd" id="1_ganop"]
+[ext_resource type="FontFile" uid="uid://dtiujgu3wn57w" path="res://4all/Pixeled.ttf" id="1_tobvk"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_ganop"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_ganop"]
+font = ExtResource("1_tobvk")
+font_size = 24
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_tfo3q"]
+
+[node name="PauseMenu" type="CanvasLayer"]
+script = ExtResource("1_ganop")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.0026177876, 0.0026177883, 0.0026177873, 1)
+
+[node name="Panel" type="Panel" parent="."]
+anchors_preset = -1
+anchor_top = 0.09
+anchor_right = 1.0
+anchor_bottom = 0.87500006
+offset_bottom = -3.0517578e-05
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxEmpty_ganop")
+
+[node name="Paused" type="Label" parent="Panel"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 23.0
+grow_horizontal = 2
+text = "PAUSED"
+label_settings = SubResource("LabelSettings_ganop")
+horizontal_alignment = 1
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.012
+anchor_top = 0.264
+anchor_right = 0.012
+anchor_bottom = 0.264
+offset_left = 21.119999
+offset_top = -2.895996
+offset_right = 61.12
+offset_bottom = 37.104004
+
+[node name="Resume" type="Button" parent="Panel/VBoxContainer"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("1_tobvk")
+theme_override_font_sizes/font_size = 14
+text = "RESUME"
+flat = true
+alignment = 0
+
+[node name="Retry" type="Button" parent="Panel/VBoxContainer"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("1_tobvk")
+theme_override_font_sizes/font_size = 14
+text = "RETRY"
+flat = true
+alignment = 0
+
+[node name="Stats" type="Button" parent="Panel/VBoxContainer"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("1_tobvk")
+theme_override_font_sizes/font_size = 14
+text = "STATS"
+flat = true
+alignment = 0
+
+[node name="Option" type="Button" parent="Panel/VBoxContainer"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("1_tobvk")
+theme_override_font_sizes/font_size = 14
+text = "OPTION"
+flat = true
+alignment = 0
+
+[node name="StatsPanel" type="Panel" parent="."]
+anchors_preset = -1
+anchor_top = 0.094000004
+anchor_right = 1.0
+anchor_bottom = 0.873
+offset_top = -1.6000023
+offset_bottom = 1.7999878
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxEmpty_tfo3q")
+
+[node name="StatsBackButton" type="Button" parent="StatsPanel"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.5
+anchor_top = 0.95600003
+anchor_right = 0.5
+anchor_bottom = 0.95600003
+offset_left = -36.0
+offset_top = -33.140015
+offset_right = 36.0
+offset_bottom = 20.859985
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_fonts/font = ExtResource("1_tobvk")
+theme_override_font_sizes/font_size = 10
+text = "BACK"
+flat = true
+
+[node name="StatsContainer" type="Container" parent="StatsPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="OptionsPanel" type="Panel" parent="."]
+anchors_preset = -1
+anchor_top = 0.094000004
+anchor_right = 1.0
+anchor_bottom = 0.873
+offset_top = -1.6000023
+offset_bottom = 1.7999878
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxEmpty_tfo3q")
+
+[node name="OptionsBackButton" type="Button" parent="OptionsPanel"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.5
+anchor_top = 0.95600003
+anchor_right = 0.5
+anchor_bottom = 0.95600003
+offset_left = -36.0
+offset_top = -33.140015
+offset_right = 36.0
+offset_bottom = 20.859985
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_fonts/font = ExtResource("1_tobvk")
+theme_override_font_sizes/font_size = 10
+text = "BACK"
+flat = true

@@ -12,8 +12,6 @@ height = 20.0
 
 [node name="SplitBullet" instance=ExtResource("1_q2wrx")]
 script = ExtResource("2_rw6wl")
-split_count = 3
-split_angle_spread = 0.7853981633974483
 
 [node name="Sprite2D" parent="." index="0"]
 rotation = 4.712389

@@ -8,6 +8,9 @@ load_path = "res://.godot/imported/Purple Effect and Bullet 16x16.png-c68045e9df
 
 [node name="HeavyBullet" instance=ExtResource("1_5i5md")]
 script = ExtResource("2_77ab1")
+max_penetrations = 3
+damage_falloff_per_hit = 0.15
+speed_multiplier = 0.6
 
 [node name="Sprite2D" parent="." index="0"]
 texture = SubResource("CompressedTexture2D_77ab1")

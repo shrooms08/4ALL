@@ -1,0 +1,7 @@
+[gd_scene format=3 uid="uid://dpvtqb17dv8rh"]
+
+[node name="HUD" type="CanvasLayer"]
+
+[node name="Root" type="MarginContainer" parent="."]
+offset_right = 40.0
+offset_bottom = 40.0

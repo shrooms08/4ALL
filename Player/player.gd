@@ -18,7 +18,7 @@ extends CharacterBody2D
 
 
 # Health System
-const MAX_HEALTH = 3
+const MAX_HEALTH = 100
 var current_health = MAX_HEALTH
 var is_invincible = false
 const INVINCIBILITY_TIME = 1.0  # Seconds of invincibility after getting hurt
@@ -28,6 +28,9 @@ const KNOCKBACK_UP = -300  # Upward knockback when hurt
 signal health_changed(new_health)
 signal player_died()
 signal enemy_stomped()
+signal ammo_changed(current_ammo: int, max_ammo: int)
+signal gems_changed(new_count)
+
 
 # Shooting
 @export var bullet_scene: PackedScene  # Assign your bullet scene in inspector
@@ -47,11 +50,11 @@ const SHOOT_FALL_SLOWDOWN = 0.4
 const SHOOT_UPWARD_KICK = -120
 const SHOOT_FREEZE_TIME = 0.09 # upward push when shooting
 var shoot_freeze_timer = 0.0
-const MAX_AMMO = 8  # Maximum ammo capacity
+var max_ammo = 8  # Maximum ammo capacity
 
 var can_shoot = true
 var shoot_timer = 0.0
-var current_ammo = MAX_AMMO  # Current ammo (starts at 8)
+var current_ammo = max_ammo # Current ammo (starts at 8)
 
 
 # Stomp System
@@ -63,7 +66,7 @@ const RUN_SPEED = 220.0
 const JUMP_VELOCITY = -750.0
 const GRAVITY_JUMP = 3200
 const GRAVITY_FALL = 3500
-const MAX_FALL_VELOCITY = 2000
+const MAX_FALL_VELOCITY = 1200
 const VARIABLE_JUMP_MULTIPLIER = 0.45
 const MAX_JUMPS = 1
 const JUMP_BUFFER_TIME = 0.08
@@ -108,6 +111,13 @@ var previous_state = null
 var next_state = null
 
 
+# Enemy reset throttle
+var _enemy_reset_interval := 0.2
+var _enemy_reset_timer := 0.0
+
+var _hurt_tween: Tween = null
+
+
 #endregion
 
 
@@ -115,6 +125,18 @@ var next_state = null
 
 func _ready() -> void:
 	add_to_group("player")
+	
+	# Validate weapon manager
+	if not weapon_manager:
+		push_error("PlayerWeapon node is missing! Add it as a child node.")
+		return
+	
+	# Connect to weapon manager signals
+	_connect_weapon_signals()
+	
+	#Initialize ammo from weapon manager
+	max_ammo = weapon_manager.get_current_max_ammo()
+	current_ammo = max_ammo
 	
 	# Create hurt timer if it doesn't exist
 	if not hurt_timer:
@@ -141,6 +163,35 @@ func _ready() -> void:
 		state.Player = self
 	previous_state = States.fall
 	current_state = States.fall
+
+func _connect_weapon_signals()-> void:
+	"""Connect to weapon manager signals for synchronization"""
+	if not weapon_manager:
+		return
+	
+	# Update ammo capacity when bullet type changes
+	weapon_manager.ammo_capacity_changed.connect(_on_ammo_type_changed)
+	
+	# Optional: React to powerup events
+	weapon_manager.powerup_started.connect(_on_powerup_started)
+	weapon_manager.powerup_expired.connect(_on_powerup_expired)
+
+func _on_ammo_type_changed(new_max_ammo: int) -> void:
+	# Update player ammo stats whenever bullet type changes
+	current_ammo = new_max_ammo
+	max_ammo = new_max_ammo
+	print("Ammo type updated: max =", new_max_ammo)
+
+
+func _on_powerup_started(bullet_name: String, duration: float) -> void:
+	"""Optional: Add visual/audio feedback when powerup starts"""
+	print("Powerup active: ", bullet_name)
+	# Could trigger UI updates, sound effects, visual effects, etc.
+
+
+func _on_powerup_expired() -> void:
+	"""Optional: Add feedback when powerup expires"""
+	print("Powerup ended")
 
 
 func setup_stomp_area():
@@ -179,7 +230,7 @@ func _physics_process(delta: float) -> void:
 
 	# Shooting while airborne (Downwell-style)
 	if not is_on_floor() and key_jump_pressed:
-		handle_shoot()
+		_attempt_shoot()
 	
 	# Update shoot cooldown
 	if shoot_timer > 0:
@@ -196,10 +247,15 @@ func _physics_process(delta: float) -> void:
 	# Check for enemy collisions
 	check_enemy_collision()
 	
-	# Reset being_stomped flags on all enemies after collision check
-	for enemy in get_tree().get_nodes_in_group("enemies"):
-		if "being_stomped" in enemy:
-			enemy.being_stomped = false
+	# Throttled reset of being_stomped flags to avoid iterating groups every frame
+	_enemy_reset_timer -= delta
+	if _enemy_reset_timer <= 0.0:
+		_enemy_reset_timer = _enemy_reset_interval
+		var enemies = get_tree().get_nodes_in_group("enemies")
+		for enemy in enemies:
+			if "being_stomped" in enemy and enemy.being_stomped:
+				enemy.being_stomped = false
+
 	
 	# Update current state
 	current_state.update(delta)
@@ -275,19 +331,27 @@ func check_stomp_collisions(velocity_y_before: float):
 
 
 func _on_stomp_area_body_entered(body):
-	# This is now just for debugging - actual stomp check happens in check_stomp_collisions
-	print("StompArea detected body: ", body.name)
-	print("Body groups: ", body.get_groups())
-	
-	# Check if it's an enemy and player is moving downward
+	# Only process if it's an enemy and the player is moving downward
+	if not body:
+		return
 	if (body.is_in_group("enemy") or body.is_in_group("enemies")) and velocity.y > 0:
+		# Prevent double stomping by checking a flag
 		if "being_stomped" in body and body.being_stomped:
 			return
+		# Mark so enemies don't hurt player this frame
+		if body.has_method("set"):
+			body.set("being_stomped", true)
+		else:
+			body.being_stomped = true
 		stomp_enemy(body)
+
 
 
 func stomp_enemy(enemy):
 	print("Stomping enemy: ", enemy.name)
+	
+	# Register stomp with ComboManager
+	ComboManagr.register_stomp()
 	
 	# Call on_stomped method if it exists (for custom stomp behavior)
 	if enemy.has_method("on_stomped"):
@@ -307,7 +371,8 @@ func stomp_enemy(enemy):
 		enemy.queue_free()
 	
 	# Reload ammo (capped at MAX_AMMO)
-	current_ammo = min(current_ammo + STOMP_AMMO_REWARD, MAX_AMMO)
+	current_ammo = min(current_ammo + STOMP_AMMO_REWARD, max_ammo)
+	emit_signal("ammo_changed", current_ammo, max_ammo)
 	
 	# Apply bounce
 	velocity.y = STOMP_BOUNCE
@@ -377,20 +442,35 @@ func die():
 	is_dead = true
 	emit_signal("player_died")
 	
+	# Stop all physics processing immediately
+	set_physics_process(false)
+	velocity = Vector2.ZERO
+	
+	# Reset combo on death
+	ComboManagr.reset_combo()
+	
+	# Save high score
+	GameManager.save_high_score()
+	
 	# Stop all movement
 	velocity = Vector2.ZERO
 	
 	# Play death animation
 	player_animation.play("die")
-	await player_animation.animation_finished
+	if player_animation and player_animation.sprite_frames.has_animation("die"):
+		player_animation.play("die")
+		# Wait for animation or timeout
+		await get_tree().create_timer(1.0).timeout
+	 
 	
-	# Optional: Play death animation or effects here
-	print("Player died!")
+	if not is_instance_valid(self):
+		return
 	
-	# You can restart the level, show game over screen, etc.
-	# For now, we'll just reload the scene after a delay
-	await get_tree().create_timer(2.0).timeout
-	get_tree().reload_current_scene()
+	# Reset stats for new game
+	GameManager.reset_stats()
+	ComboManagr.reset_stats()
+	
+	get_tree().call_deferred("reload_current_scene")
 
 
 func _on_hurt_timer_timeout():
@@ -400,16 +480,16 @@ func _on_hurt_timer_timeout():
 
 func start_hurt_flash():
 	player_animation.play("hurt")
-	# Create a flashing effect during invincibility
+	# Create a flashing effect during invicibility
 	var tween = create_tween()
-	tween.set_loops(int(INVINCIBILITY_TIME / 0.2))
+	tween.set_loops(int(INVINCIBILITY_TIME/0.2))
 	tween.tween_property(self, "modulate:a", 0.3, 0.1)
 	tween.tween_property(self, "modulate:a", 1.0, 0.1)
-
 
 func stop_hurt_flash():
 	# Ensure player is fully visible
 	modulate.a = 1.0
+
 
 
 func heal(amount: int = 1):
@@ -420,13 +500,12 @@ func heal(amount: int = 1):
 #endregion
 
 
-func apply_bullet_powerup(bullet_scene: PackedScene, duration: float) -> void:
+func apply_bullet_powerup(bullet_scene: PackedScene, duration: float = 0.0) -> void:
+	"""Public method for powerup pickups to call"""
 	if weapon_manager:
 		weapon_manager.apply_bullet_powerup(bullet_scene, duration)
 	else:
-		# Fallback if no weapon manager
-		self.bullet_scene = bullet_scene
-		print("Powerup applied directly to player")
+		push_error("Cannot apply powerup - WeaponManager missing!")
 
 
 func get_input_states():
@@ -476,8 +555,13 @@ func handle_landing():
 		# Spawn landing particle
 		spawn_jump_particle()
 		
+		# Reset perfect stomp counter
+		GameManager.reset_perfect_stomps()
+		
 		jumps = 0
-		current_ammo = MAX_AMMO  # Reload ammo when landing
+		current_ammo = max_ammo  # Reload ammo when landing
+		print("PLAYER: Landing - Setting ammo to %d/%d" % [current_ammo, max_ammo])
+		emit_signal("ammo_changed", current_ammo, max_ammo)
 		change_state(States.idle)
 
 
@@ -512,7 +596,7 @@ func handle_jump():
 	else:
 		# SHOOTING: When in air, jump button shoots instead
 		if not is_on_floor() and Input.is_action_just_pressed("jump"):
-			handle_shoot()
+			_execute_shoot()
 			return
 			
 		# Double jump logic (if MAX_JUMPS > 1)
@@ -542,73 +626,122 @@ func check_for_stomp():
 			#break
 
 
-func handle_shoot():
-	# Check if we can shoot (have ammo, not on cooldown, bullet scene exists)
-	if !can_shoot or bullet_scene == null or current_ammo <= 0:
+func _attempt_shoot() -> void:
+	"""Check if shooting is possible"""
+	if not can_shoot or current_ammo <= 0:
 		return
 	
-	# Shoot downward
-	shoot_bullets()
+	if not weapon_manager:
+		push_error("Cannot shoot without WeaponManager!")
+		return
 	
-	# Emit shoot particles
-	if shoot_particles and shoot_particle_point:
-		shoot_particles.global_position = shoot_particle_point.global_position
-		shoot_particles.emitting = false
-		shoot_particles.restart()
-		shoot_particles.emitting = true
+	_execute_shoot()
+
+func _execute_shoot() -> void:
+	"""Perform the shooting action"""
+	var bullet_scene = weapon_manager.get_current_bullet_scene()
+	var damage = weapon_manager.get_current_damage()
 	
-	if shoot:
-		shoot.play()
+	if not bullet_scene:
+		push_error("No bullet scene available from weapon manager!")
+		return
+	
+	# Register shot with Game.Manager
+	GameManager.register_shot()
+	
+	# Spawn bullets
+	_spawn_bullets(bullet_scene, damage)
+	
+	# Effects
+	_play_shoot_effects()
 	
 	# Consume ammo
 	current_ammo = max(0, current_ammo - 1)
+	emit_signal("ammo_changed", current_ammo, max_ammo)
 	
-	#  Shootin freeze time
+	# Movement effects
 	shoot_freeze_timer = SHOOT_FREEZE_TIME
-	
-	# Slow down fall speed when shooting
 	if velocity.y > 0:
 		velocity.y *= SHOOT_FALL_SLOWDOWN
 		velocity.y += SHOOT_UPWARD_KICK
 	
-	# Add Camera Shake Here
+	# Camera shake
 	if camera_2d and camera_2d.has_method("shake"):
-		camera_2d.shake(5.0) 
+		camera_2d.shake(5.0)
 	
 	# Start cooldown
 	can_shoot = false
 	shoot_timer = SHOOT_COOLDOWN
 
 
-func shoot_bullets():
-	var base_angle = 90  # Shooting downward (90 deg rees)
+func _spawn_bullets(bullet_scene: PackedScene, damage: float) -> void:
+	"""Spawn the actual bullet projectiles"""
+	var base_angle = 90  # Shooting downward
 	
-	# Get current bullet scene from weapon manager
-	var bullet_to_use = bullet_scene # Default fallback
+	# Check if this bullet type shoots multiple bullets
+	var bullets_to_spawn = 1
+	var spread_angle = 15.0
 	
-	if weapon_manager:
-		bullet_to_use = weapon_manager.get_current_bullet_scene()
+	# Detect split bullet by checking the scene
+	var temp_bullet = bullet_scene.instantiate()
+	if "bullets_per_shot" in temp_bullet:
+		bullets_to_spawn = temp_bullet.bullets_per_shot
+	if "bullet_spread_angle" in temp_bullet:
+		spread_angle = temp_bullet.bullet_spread_angle
+	temp_bullet.queue_free()
 	
-	for i in range(BULLETS_PER_SHOT):
-		var bullet = bullet_to_use.instantiate()
+	# Spawn all bullets
+	for i in range(bullets_to_spawn):
+		var bullet = bullet_scene.instantiate()
 		get_parent().add_child(bullet)
 		
-		# Position bullet at shoot point
+		# Position
 		if shoot_point:
 			bullet.global_position = shoot_point.global_position
 		else:
 			bullet.global_position = global_position
 		
-		# Calculate spread angle
-		var spread_offset = 0
-		if BULLETS_PER_SHOT > 1:
-			spread_offset = (i - (BULLETS_PER_SHOT - 1) / 2.0) * BULLET_SPREAD
+		# Calculate spread
+		var spread_offset = 0.0
+		if bullets_to_spawn > 1:
+			# Spread bullets evenly across the spread angle
+			spread_offset = (i - (bullets_to_spawn - 1) / 2.0) * (spread_angle / (bullets_to_spawn - 1))
 		
 		var angle = deg_to_rad(base_angle + spread_offset)
 		
-		# Set bullet direction
+		# Setup bullet
 		if bullet.has_method("setup"):
-			bullet.setup(angle)
+			bullet.setup(angle, damage)
+		else:
+			push_warning("Bullet doesn't have setup() method")
+
+
+func _play_shoot_effects() -> void:
+	"""Play visual and audio effects for shooting"""
+	# Particle effects
+	if shoot_particles and shoot_particle_point:
+		shoot_particles.global_position = shoot_particle_point.global_position
+		shoot_particles.emitting = false
+		shoot_particles.restart()
+		shoot_particles.emitting = true
+	
+	# Sound effect
+	if shoot:
+		shoot.play()
+
+
+func get_current_weapon_info() -> Dictionary:
+	"""Get info about current weapon for UI display"""
+	if weapon_manager:
+		return weapon_manager.get_debug_info()
+	return {}
+
+
+func get_powerup_time_remaining() -> float:
+	"""Get remaining powerup time for UI"""
+	if weapon_manager:
+		return weapon_manager.get_powerup_time_remaining()
+	return 0.0
 
 
 func handle_flip_h():

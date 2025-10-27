@@ -1,9 +1,12 @@
-[gd_scene load_steps=8 format=4 uid="uid://kjsmlujaavh6"]
+[gd_scene load_steps=11 format=4 uid="uid://kjsmlujaavh6"]
 
 [ext_resource type="Texture2D" uid="uid://dtlm84p262rea" path="res://4all/4all Tileset/Tilemap/monochrome_tilemap_packed.png" id="1_6ppil"]
 [ext_resource type="Script" uid="uid://ciksjtm7gcmc1" path="res://Chunks/Chunk09/chunk_09.gd" id="1_abyrc"]
 [ext_resource type="Texture2D" uid="uid://b1t8tww3dy52c" path="res://4all/4all Tileset/Tilemap/monochrome_tilemap_transparent_packed.png" id="2_8gw2i"]
+[ext_resource type="PackedScene" uid="uid://cq2dq281hhx3u" path="res://Enemies/Flyin' Enemies/Bat/bat.tscn" id="2_ugwk7"]
 [ext_resource type="Script" uid="uid://dr8gykpmnh8tf" path="res://Chunks/Chunk09/tile_map_layer.gd" id="3_7ybix"]
+[ext_resource type="PackedScene" uid="uid://ybrdxtmhgqv6" path="res://Enemies/Crawling Enemies/Worm/worm.tscn" id="3_mjsc3"]
+[ext_resource type="Script" uid="uid://bk4wql3gti5jw" path="res://Chunks/Chunk09/enemy_spawner.gd" id="5_wwgl5"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_d8d0l"]
 texture = ExtResource("1_6ppil")
@@ -865,3 +868,22 @@ position = Vector2(122, 0)
 
 [node name="Exit" type="Marker2D" parent="."]
 position = Vector2(122, 600)
+
+[node name="EnemySpawner" type="Node2D" parent="."]
+script = ExtResource("5_wwgl5")
+enemy_scenes = Array[PackedScene]([ExtResource("3_mjsc3"), ExtResource("2_ugwk7")])
+spawn_chance = 1.0
+
+[node name="SpawnPoints" type="Node2D" parent="EnemySpawner"]
+
+[node name="EnemySpawn1" type="Marker2D" parent="EnemySpawner/SpawnPoints"]
+position = Vector2(210, 103)
+
+[node name="EnemySpawn2" type="Marker2D" parent="EnemySpawner/SpawnPoints"]
+position = Vector2(172, 216)
+
+[node name="EnemySpawn3" type="Marker2D" parent="EnemySpawner/SpawnPoints"]
+position = Vector2(158, 425)
+
+[node name="EnemySpawn4" type="Marker2D" parent="EnemySpawner/SpawnPoints"]
+position = Vector2(96, 493)

@@ -39,11 +39,6 @@ func update(delta: float) -> void:
 	#handle_idle()
 
 
-#func handle_idle():
-	#if Player.move_direction_x == 0:
-		#Player.change_state(States.idle)
-
-
 func handle_animation():
 	Player.player_animation.play("run")
 	Player.handle_flip_h()

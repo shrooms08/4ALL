@@ -3,12 +3,19 @@ extends Node2D
 @onready var player: CharacterBody2D = $Player
 @onready var level_generator: Node2D = $LevelGenerator
 @onready var game_title: Label = $CanvasLayer/GameTitle
+@onready var audience_spawner: AudienceEnemySpawner = $AudienceEnemySpawner
 
 
 func _ready():
 	var start_chunk = level_generator.get_node_or_null("StartChunk") # or store a reference when spawned
 	if start_chunk:
 		start_chunk.player_left_start.connect(_on_player_left_start)
+
+
+func _process(_delta):
+	if Input.is_action_just_pressed("spawn_audience_enemy"):
+		var spawn_pos = player.global_position + Vector2(randf_range(-200, 200), -100)
+		audience_spawner.spawn_random_audience_enemy(spawn_pos)
 
 
 func _on_player_left_start():

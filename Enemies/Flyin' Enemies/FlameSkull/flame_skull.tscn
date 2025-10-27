@@ -1,0 +1,123 @@
+[gd_scene load_steps=18 format=3 uid="uid://c3w41gseo2rg"]
+
+[ext_resource type="PackedScene" uid="uid://bld50hpqt6t1h" path="res://BaseEnemy/base_enemy.tscn" id="1_2j6ia"]
+[ext_resource type="Texture2D" uid="uid://b84rr4cokabmd" path="res://4all/Enemies/spritesheet/hell_skull_blue/spritesheet.png" id="2_47it3"]
+[ext_resource type="Script" uid="uid://caa0wiids3amc" path="res://Enemies/Flyin' Enemies/FlameSkull/flame_skull.gd" id="2_ayrqv"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_47it3"]
+atlas = ExtResource("2_47it3")
+region = Rect2(0, 0, 48, 96)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ros5x"]
+atlas = ExtResource("2_47it3")
+region = Rect2(48, 0, 48, 96)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_3s6hy"]
+atlas = ExtResource("2_47it3")
+region = Rect2(96, 0, 48, 96)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ayrqv"]
+atlas = ExtResource("2_47it3")
+region = Rect2(0, 0, 48, 96)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_k5dgt"]
+atlas = ExtResource("2_47it3")
+region = Rect2(48, 0, 48, 96)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_5pf3x"]
+atlas = ExtResource("2_47it3")
+region = Rect2(96, 0, 48, 96)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_jh4qx"]
+atlas = ExtResource("2_47it3")
+region = Rect2(144, 0, 48, 96)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_wqkpj"]
+atlas = ExtResource("2_47it3")
+region = Rect2(192, 0, 48, 96)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_kt303"]
+atlas = ExtResource("2_47it3")
+region = Rect2(240, 0, 48, 96)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_0un4a"]
+atlas = ExtResource("2_47it3")
+region = Rect2(288, 0, 48, 96)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_pjkdc"]
+atlas = ExtResource("2_47it3")
+region = Rect2(336, 0, 48, 96)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_wxdxu"]
+atlas = ExtResource("2_47it3")
+region = Rect2(384, 0, 48, 96)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_wnt6c"]
+atlas = ExtResource("2_47it3")
+region = Rect2(432, 0, 48, 96)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_ros5x"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_47it3")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ros5x")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_3s6hy")
+}],
+"loop": true,
+"name": &"idle",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ayrqv")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_k5dgt")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_5pf3x")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_jh4qx")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_wqkpj")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_kt303")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_0un4a")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_pjkdc")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_wxdxu")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_wnt6c")
+}],
+"loop": true,
+"name": &"pursue",
+"speed": 5.0
+}]
+
+[node name="FlameSkull" instance=ExtResource("1_2j6ia")]
+scale = Vector2(0.4, 0.4)
+script = ExtResource("2_ayrqv")
+hover_height_variation = 20.0
+hover_speed = 2.0
+acceleration = 300.0
+deceleration = 200.0
+player_knockback_force = 350.0
+self_recoil_force = 200.0
+
+[node name="AnimatedSprite2D" parent="." index="0"]
+sprite_frames = SubResource("SpriteFrames_ros5x")
+animation = &"pursue"
