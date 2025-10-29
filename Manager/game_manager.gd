@@ -28,6 +28,7 @@ var combo_timer: float = 0.0
 
 func _ready() -> void:
 	add_to_group("game_manager")
+	print("GameManager is loaded and ready!")
 
 
 func _process(delta: float) -> void:

@@ -1,4 +1,4 @@
-[gd_scene load_steps=6 format=3 uid="uid://f56013n24gjy"]
+[gd_scene load_steps=11 format=3 uid="uid://f56013n24gjy"]
 
 [ext_resource type="Script" uid="uid://dnwfj22hh0ksn" path="res://PauseMenu/pause_menu.gd" id="1_ganop"]
 [ext_resource type="FontFile" uid="uid://dtiujgu3wn57w" path="res://4all/Pixeled.ttf" id="1_tobvk"]
@@ -10,6 +10,25 @@ font = ExtResource("1_tobvk")
 font_size = 24
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_tfo3q"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_tfo3q"]
+font = ExtResource("1_tobvk")
+
+[sub_resource type="LabelSettings" id="LabelSettings_3pbqp"]
+font = ExtResource("1_tobvk")
+font_size = 10
+
+[sub_resource type="LabelSettings" id="LabelSettings_q8wey"]
+font = ExtResource("1_tobvk")
+font_size = 10
+
+[sub_resource type="LabelSettings" id="LabelSettings_hy7yv"]
+font = ExtResource("1_tobvk")
+font_size = 10
+
+[sub_resource type="LabelSettings" id="LabelSettings_au66y"]
+font = ExtResource("1_tobvk")
+font_size = 10
 
 [node name="PauseMenu" type="CanvasLayer"]
 script = ExtResource("1_ganop")
@@ -115,13 +134,42 @@ theme_override_font_sizes/font_size = 10
 text = "BACK"
 flat = true
 
-[node name="StatsContainer" type="Container" parent="StatsPanel"]
+[node name="VBoxContainer" type="VBoxContainer" parent="StatsPanel"]
 layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -64.0
+offset_top = 39.0
+offset_right = 66.0
+offset_bottom = 215.0
 grow_horizontal = 2
-grow_vertical = 2
+
+[node name="STATS" type="Label" parent="StatsPanel/VBoxContainer"]
+layout_mode = 2
+text = "STATS"
+label_settings = SubResource("LabelSettings_tfo3q")
+horizontal_alignment = 1
+
+[node name="ScoreLabel" type="Label" parent="StatsPanel/VBoxContainer"]
+layout_mode = 2
+label_settings = SubResource("LabelSettings_3pbqp")
+horizontal_alignment = 1
+
+[node name="EnemiesLabel" type="Label" parent="StatsPanel/VBoxContainer"]
+layout_mode = 2
+label_settings = SubResource("LabelSettings_q8wey")
+horizontal_alignment = 1
+
+[node name="GemsLabel" type="Label" parent="StatsPanel/VBoxContainer"]
+layout_mode = 2
+label_settings = SubResource("LabelSettings_hy7yv")
+horizontal_alignment = 1
+
+[node name="DepthLabel" type="Label" parent="StatsPanel/VBoxContainer"]
+layout_mode = 2
+label_settings = SubResource("LabelSettings_au66y")
+horizontal_alignment = 1
 
 [node name="OptionsPanel" type="Panel" parent="."]
 anchors_preset = -1
@@ -133,6 +181,30 @@ offset_bottom = 1.7999878
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxEmpty_tfo3q")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="OptionsPanel"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -62.0
+offset_top = -64.5
+offset_right = 63.0
+offset_bottom = 47.5
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MusicToggle" type="CheckButton" parent="OptionsPanel/VBoxContainer"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("1_tobvk")
+text = "BGM"
+
+[node name="TimerToggle" type="CheckButton" parent="OptionsPanel/VBoxContainer"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("1_tobvk")
+text = "Timer"
 
 [node name="OptionsBackButton" type="Button" parent="OptionsPanel"]
 layout_mode = 1
@@ -151,3 +223,6 @@ theme_override_fonts/font = ExtResource("1_tobvk")
 theme_override_font_sizes/font_size = 10
 text = "BACK"
 flat = true
+
+[connection signal="toggled" from="OptionsPanel/VBoxContainer/MusicToggle" to="." method="_on_music_toggled"]
+[connection signal="toggled" from="OptionsPanel/VBoxContainer/TimerToggle" to="." method="_on_timer_toggled"]

@@ -1,6 +1,7 @@
 extends Node
 
 
+
 @onready var locked: Node = $Locked
 @onready var idle: Node = $Idle
 @onready var run: Node = $Run

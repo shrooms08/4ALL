@@ -17,7 +17,7 @@ var is_pursuing: bool = false
 
 func _ready():
 	# Set bat stats
-	max_health = 20.0
+	max_health = 30.0
 	current_health = max_health
 	move_speed = 120.0
 	damage = 8.0

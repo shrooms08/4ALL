@@ -4,7 +4,7 @@ class_name BulletBase
 
 const SPEED = 800
 const LIFETIME = 2.0
-const MAX_DISTANCE = 300
+const MAX_DISTANCE = 200
 
 @export var damage: float = 10.0
 @export var knockback_force: float = 5.0

@@ -1,6 +1,7 @@
 extends PlayerState
 
 @onready var jump: AudioStreamPlayer2D = $"../../Audio/Jump"
+@onready var reload: AudioStreamPlayer2D = $"../../Audio/Reload"
 
 func enter_state() -> void:
 	Name = "Fall"
@@ -28,8 +29,8 @@ func update(delta: float) -> void:
 	#Player.handle_landing()
 	if Player.is_on_floor():
 		Player.jumps = 0
-		Player.current_ammo = Player.max_ammo 
-		Player.emit_signal("ammo_changed", Player.current_ammo, Player.max_ammo)
+		await get_tree().create_timer(0.1).timeout
+		Player.reload_ammo()
 		Player.change_state(States.idle)
 		return
 	

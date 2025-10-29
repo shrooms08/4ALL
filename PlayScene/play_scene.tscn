@@ -1,8 +1,11 @@
-[gd_scene load_steps=10 format=3 uid="uid://dj2gvh7uw53s3"]
+[gd_scene load_steps=13 format=3 uid="uid://dj2gvh7uw53s3"]
 
 [ext_resource type="Script" uid="uid://dkn6sbqe3f8iv" path="res://PlayScene/play_scene.gd" id="1_vfcvm"]
 [ext_resource type="PackedScene" uid="uid://2j1ltrvfhf02" path="res://Player/player.tscn" id="2_feovp"]
+[ext_resource type="AudioStream" uid="uid://c45684cyd2lyc" path="res://4all/4all Sound/2.mp3" id="2_k21yn"]
+[ext_resource type="AudioStream" uid="uid://cph25c2y08vpb" path="res://4all/4all Sound/3.mp3" id="3_7lfmn"]
 [ext_resource type="PackedScene" uid="uid://66ywt3udtw03" path="res://LevelGenerator/level_generator.tscn" id="4_d45jc"]
+[ext_resource type="AudioStream" uid="uid://b62orvu8aewn" path="res://4all/4all Sound/4.mp3" id="4_ffgfw"]
 [ext_resource type="Script" uid="uid://wypne74yk38y" path="res://PlayScene/label.gd" id="4_t8b1b"]
 [ext_resource type="PackedScene" uid="uid://f56013n24gjy" path="res://PauseMenu/pause_menu.tscn" id="7_efgr1"]
 [ext_resource type="FontFile" uid="uid://dtiujgu3wn57w" path="res://4all/Pixeled.ttf" id="7_t8b1b"]
@@ -15,6 +18,7 @@ font_size = 30
 
 [node name="PlayScene" type="Node2D"]
 script = ExtResource("1_vfcvm")
+game_musics = Array[AudioStream]([ExtResource("2_k21yn"), ExtResource("3_7lfmn"), ExtResource("4_ffgfw")])
 metadata/_edit_horizontal_guides_ = [192.0]
 
 [node name="PlayerUI" parent="." instance=ExtResource("9_2amxo")]
@@ -56,6 +60,7 @@ position = Vector2(38, 166)
 scale = Vector2(0.32, 0.32)
 
 [node name="CanvasLayer2" type="CanvasLayer" parent="."]
+visible = false
 scale = Vector2(0.5, 0.5)
 transform = Transform2D(0.5, 0, 0, 0.5, 0, 0)
 
@@ -67,3 +72,6 @@ offset_bottom = 33.0
 script = ExtResource("4_t8b1b")
 
 [node name="AudienceEnemySpawner" parent="." instance=ExtResource("8_t8b1b")]
+
+[node name="MusicPlayer" type="AudioStreamPlayer" parent="." groups=["background_music"]]
+volume_db = -15.0

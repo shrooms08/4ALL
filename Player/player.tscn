@@ -1,4 +1,4 @@
-[gd_scene load_steps=66 format=3 uid="uid://2j1ltrvfhf02"]
+[gd_scene load_steps=68 format=3 uid="uid://2j1ltrvfhf02"]
 
 [ext_resource type="Script" uid="uid://djh48r4u7c6na" path="res://Player/player.gd" id="1_4ntmi"]
 [ext_resource type="PackedScene" uid="uid://bjaf0ikfdbtui" path="res://BulletBase/bullet_base.tscn" id="2_7emwf"]
@@ -21,6 +21,8 @@
 [ext_resource type="AudioStream" uid="uid://65lw14lfa5x4" path="res://4all/4all Sound/Shoot.wav" id="19_7emwf"]
 [ext_resource type="AudioStream" uid="uid://i4t8inhd00cu" path="res://4all/4all Sound/Hurt.wav" id="20_hshwv"]
 [ext_resource type="Script" uid="uid://b4d0b4lrx6tpm" path="res://Player/player_weapon.gd" id="21_7emwf"]
+[ext_resource type="AudioStream" uid="uid://c6thgh74kje4x" path="res://4all/4all Sound/reload.mp3" id="21_hshwv"]
+[ext_resource type="AudioStream" uid="uid://c2xdxt7g4o8js" path="res://4all/4all Sound/stomp.mp3" id="22_gpjlu"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_hshwv"]
 atlas = ExtResource("4_pisgm")
@@ -461,6 +463,15 @@ attenuation = 1e-05
 stream = ExtResource("20_hshwv")
 volume_db = -25.0
 max_distance = 10000000000000.0
+
+[node name="Reload" type="AudioStreamPlayer2D" parent="Audio"]
+stream = ExtResource("21_hshwv")
+volume_db = -20.0
+max_distance = 10000000000.0
+
+[node name="Stomp" type="AudioStreamPlayer2D" parent="Audio"]
+stream = ExtResource("22_gpjlu")
+max_distance = 10000000000.0
 
 [node name="PlayerWeapon" type="Node2D" parent="."]
 script = ExtResource("21_7emwf")

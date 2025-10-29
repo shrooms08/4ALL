@@ -11,6 +11,8 @@ extends CharacterBody2D
 @onready var shoot_particles: CPUParticles2D = $ShootParticles
 @onready var shoot_particle_point: Marker2D = $ShootParticlePoint
 @onready var weapon_manager: Node2D = $PlayerWeapon
+@onready var reload: AudioStreamPlayer2D = $Audio/Reload
+@onready var stomp: AudioStreamPlayer2D = $Audio/Stomp
 
 
 # Camera Ref
@@ -18,7 +20,7 @@ extends CharacterBody2D
 
 
 # Health System
-const MAX_HEALTH = 100
+const MAX_HEALTH = 4
 var current_health = MAX_HEALTH
 var is_invincible = false
 const INVINCIBILITY_TIME = 1.0  # Seconds of invincibility after getting hurt
@@ -66,7 +68,7 @@ const RUN_SPEED = 220.0
 const JUMP_VELOCITY = -750.0
 const GRAVITY_JUMP = 3200
 const GRAVITY_FALL = 3500
-const MAX_FALL_VELOCITY = 1200
+const MAX_FALL_VELOCITY = 800
 const VARIABLE_JUMP_MULTIPLIER = 0.45
 const MAX_JUMPS = 1
 const JUMP_BUFFER_TIME = 0.08
@@ -180,6 +182,8 @@ func _on_ammo_type_changed(new_max_ammo: int) -> void:
 	# Update player ammo stats whenever bullet type changes
 	current_ammo = new_max_ammo
 	max_ammo = new_max_ammo
+	if reload:
+		reload.play()
 	print("Ammo type updated: max =", new_max_ammo)
 
 
@@ -349,6 +353,10 @@ func _on_stomp_area_body_entered(body):
 
 func stomp_enemy(enemy):
 	print("Stomping enemy: ", enemy.name)
+	
+	# Play stomp sound
+	if stomp:
+		stomp.play()
 	
 	# Register stomp with ComboManager
 	ComboManagr.register_stomp()
@@ -559,7 +567,10 @@ func handle_landing():
 		GameManager.reset_perfect_stomps()
 		
 		jumps = 0
-		current_ammo = max_ammo  # Reload ammo when landing
+		if current_ammo < max_ammo:
+			current_ammo = max_ammo
+			if reload:
+				reload.play()
 		print("PLAYER: Landing - Setting ammo to %d/%d" % [current_ammo, max_ammo])
 		emit_signal("ammo_changed", current_ammo, max_ammo)
 		change_state(States.idle)
@@ -578,6 +589,20 @@ func handle_variable_jump():
 func play_jump_sound():
 	if jump:
 		jump.play()
+
+func reload_ammo():
+	if current_ammo < max_ammo:
+		print("Reloading ammo... before:", current_ammo)
+		current_ammo = max_ammo
+		emit_signal("ammo_changed", current_ammo, max_ammo)
+		print("Reload complete! After:", current_ammo)
+
+		if reload and not reload.playing:
+			print("Playing reload sound...")
+			reload.play()
+	else:
+		print("Ammo already full:", current_ammo, "/", max_ammo)
+
 
 
 func handle_jump():

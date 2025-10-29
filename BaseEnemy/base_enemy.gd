@@ -239,10 +239,14 @@ func die():
 	
 	# Register kill
 	ComboManagr.register_kill()
+	GameManager.enemies_killed += 1
 	
 	var base_score = exp_value
 	var final_score = ComboManagr.calculate_score(base_score)
 	GameManager.add_score(final_score)
+	
+	# Debug print
+	print("Score:", GameManager.score, " | Enemies killed:", GameManager.enemies_killed)
 	
 	# Disable collision
 	if collision_shape_2d:

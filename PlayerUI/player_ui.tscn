@@ -22,7 +22,7 @@ font_size = 10
 font = ExtResource("2_7unqp")
 font_size = 10
 
-[node name="PlayerUI" type="CanvasLayer"]
+[node name="PlayerUI" type="CanvasLayer" groups=["player_ui"]]
 script = ExtResource("1_7unqp")
 
 [node name="HBoxContainer" type="HBoxContainer" parent="."]

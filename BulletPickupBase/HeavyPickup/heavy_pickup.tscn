@@ -2,20 +2,21 @@
 
 [ext_resource type="PackedScene" uid="uid://xb3eomqsgwjx" path="res://BulletPickupBase/bullet_pickup_base.tscn" id="1_hylmh"]
 [ext_resource type="Script" uid="uid://cuqwkrf2410pw" path="res://BulletPickupBase/HeavyPickup/heavy_pickup.gd" id="2_p3phx"]
-[ext_resource type="Texture2D" uid="uid://bvcm5vpjg5nrg" path="res://4all/4all character.png" id="3_7ssre"]
 [ext_resource type="PackedScene" uid="uid://co78rs1idpbje" path="res://BulletBase/HeavyBullet/heavy_bullet.tscn" id="3_n8qca"]
+[ext_resource type="Texture2D" uid="uid://wtc58opitrvg" path="res://4all/heavy bullet.png" id="4_n8qca"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_n8qca"]
-size = Vector2(61, 60)
+size = Vector2(270, 200)
 
 [node name="HeavyPickup" instance=ExtResource("1_hylmh")]
-scale = Vector2(0.2, 0.2)
+scale = Vector2(0.05, 0.05)
 script = ExtResource("2_p3phx")
 bullet_scene = ExtResource("3_n8qca")
 
-[node name="Sprite2D" parent="." index="0"]
-texture = ExtResource("3_7ssre")
-
-[node name="CollisionShape2D" parent="." index="1"]
-position = Vector2(0, 0)
+[node name="CollisionShape2D" parent="." index="0"]
+position = Vector2(-15.000011, 0)
+scale = Vector2(0.9999998, 0.9999998)
 shape = SubResource("RectangleShape2D_n8qca")
+
+[node name="Sprite2D" parent="." index="1"]
+texture = ExtResource("4_n8qca")

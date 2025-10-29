@@ -18,7 +18,7 @@ var is_pursuing: bool = false
 func _ready():
 	add_to_group("audience_enemies")
 	# Set bat stats
-	max_health = 50.0
+	max_health = 60.0
 	current_health = max_health
 	move_speed = 140.0
 	damage = 15.0

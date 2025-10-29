@@ -7,6 +7,8 @@
 load_path = "res://.godot/imported/Purple Effect and Bullet 16x16.png-c68045e9df0d1a3f14281b2769715999.ctex"
 
 [node name="HeavyBullet" instance=ExtResource("1_5i5md")]
+position = Vector2(-3, 0)
+scale = Vector2(0.5, 0.5)
 script = ExtResource("2_77ab1")
 max_penetrations = 3
 damage_falloff_per_hit = 0.15

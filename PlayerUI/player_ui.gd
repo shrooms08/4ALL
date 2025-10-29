@@ -76,3 +76,8 @@ func _on_gems_changed(new_count: int) -> void:
 func _on_ammo_changed(current: int, max: int) -> void:
 	# show only current bullets if you prefer the Downwell minimal look
 	bullet_count.text = "%d" % [current]
+
+
+func set_timer_visible(visible: bool) -> void:
+	if timer_label:
+		timer_label.visible = visible

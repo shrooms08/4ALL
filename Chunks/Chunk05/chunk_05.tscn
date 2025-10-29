@@ -1,11 +1,15 @@
-[gd_scene load_steps=14 format=4 uid="uid://ceqqu2aieg5pq"]
+[gd_scene load_steps=18 format=4 uid="uid://ceqqu2aieg5pq"]
 
 [ext_resource type="Texture2D" uid="uid://dtlm84p262rea" path="res://4all/4all Tileset/Tilemap/monochrome_tilemap_packed.png" id="1_p51yp"]
 [ext_resource type="Script" uid="uid://cw540ugi1t66f" path="res://Chunks/Chunk05/chunk_05.gd" id="1_pddap"]
 [ext_resource type="Texture2D" uid="uid://b1t8tww3dy52c" path="res://4all/4all Tileset/Tilemap/monochrome_tilemap_transparent_packed.png" id="2_d41ot"]
 [ext_resource type="PackedScene" uid="uid://cq2dq281hhx3u" path="res://Enemies/Flyin' Enemies/Bat/bat.tscn" id="2_e2lg4"]
+[ext_resource type="PackedScene" uid="uid://bh0walhaapmxf" path="res://BulletPickupBase/ExplosivePickup/explosive_pickup.tscn" id="2_e7lij"]
+[ext_resource type="PackedScene" uid="uid://qm6tfcc2nekk" path="res://BulletPickupBase/HeavyPickup/heavy_pickup.tscn" id="3_li8fx"]
 [ext_resource type="Script" uid="uid://b4xjjwimvst0s" path="res://Chunks/Chunk05/tile_map_layer.gd" id="3_ro1ak"]
 [ext_resource type="PackedScene" uid="uid://ybrdxtmhgqv6" path="res://Enemies/Crawling Enemies/Worm/worm.tscn" id="3_xl13b"]
+[ext_resource type="PackedScene" uid="uid://bsrd313aws5uw" path="res://BulletPickupBase/HomingPickup/homing_pickup.tscn" id="4_lugfq"]
+[ext_resource type="PackedScene" uid="uid://bqaow80xpw1ts" path="res://BulletPickupBase/SplitPickup/split_pickup.tscn" id="5_li8fx"]
 [ext_resource type="Texture2D" uid="uid://x00ydnsoqyiu" path="res://4all/Door.png" id="5_rvxa2"]
 [ext_resource type="Script" uid="uid://b1uf4eeohq0hb" path="res://Chunks/Chunk05/enemy_spawner.gd" id="6_nqfr2"]
 
@@ -870,6 +874,7 @@ height = 236.0
 
 [node name="Chunk05" type="Node2D" groups=["special_chunk"]]
 script = ExtResource("1_pddap")
+bullet_pickup_scenes = Array[PackedScene]([ExtResource("2_e7lij"), ExtResource("3_li8fx"), ExtResource("4_lugfq"), ExtResource("5_li8fx")])
 metadata/_edit_horizontal_guides_ = [0.0, 600.0]
 metadata/_edit_vertical_guides_ = [16.0, 224.0]
 
@@ -927,3 +932,10 @@ position = Vector2(175, 399)
 
 [node name="EnemySpawn3" type="Marker2D" parent="EnemySpawner/SpawnPoints"]
 position = Vector2(36, 406)
+
+[node name="BulletPickupSpawn" type="Node2D" parent="."]
+
+[node name="SpawnPoint" type="Node2D" parent="BulletPickupSpawn"]
+
+[node name="Marker2D" type="Marker2D" parent="BulletPickupSpawn/SpawnPoint"]
+position = Vector2(373, 443)

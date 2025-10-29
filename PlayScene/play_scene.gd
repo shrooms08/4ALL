@@ -4,7 +4,9 @@ extends Node2D
 @onready var level_generator: Node2D = $LevelGenerator
 @onready var game_title: Label = $CanvasLayer/GameTitle
 @onready var audience_spawner: AudienceEnemySpawner = $AudienceEnemySpawner
+@onready var music_player: AudioStreamPlayer = $MusicPlayer
 
+@export var game_musics: Array[AudioStream] = []
 
 func _ready():
 	var start_chunk = level_generator.get_node_or_null("StartChunk") # or store a reference when spawned
@@ -12,10 +14,10 @@ func _ready():
 		start_chunk.player_left_start.connect(_on_player_left_start)
 
 
-func _process(_delta):
-	if Input.is_action_just_pressed("spawn_audience_enemy"):
-		var spawn_pos = player.global_position + Vector2(randf_range(-200, 200), -100)
-		audience_spawner.spawn_random_audience_enemy(spawn_pos)
+#func _process(_delta):
+	#if Input.is_action_just_pressed("spawn_audience_enemy"):
+		#var spawn_pos = player.global_position + Vector2(randf_range(-200, 200), -100)
+		#audience_spawner.spawn_random_audience_enemy(spawn_pos)
 
 
 func _on_player_left_start():
@@ -51,3 +53,14 @@ func _show_title_with_overlay():
 	overlay.visible = false
 	title.visible = false
 	player.set_physics_process(true)
+	
+	# Start random bg music
+	_play_random_music()
+
+func _play_random_music():
+	if game_musics.is_empty():
+		return
+	
+	var random_music = game_musics.pick_random()
+	music_player.stream = random_music
+	music_player.play()

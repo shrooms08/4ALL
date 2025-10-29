@@ -3,22 +3,20 @@
 [ext_resource type="PackedScene" uid="uid://xb3eomqsgwjx" path="res://BulletPickupBase/bullet_pickup_base.tscn" id="1_8g26m"]
 [ext_resource type="Script" uid="uid://y3xt3usjgl0k" path="res://explosive_pickup.gd" id="2_te3er"]
 [ext_resource type="PackedScene" uid="uid://diyindi4dayxx" path="res://BulletBase/ExplosiveBullet/explosive_bullet.tscn" id="3_4sj6n"]
-
-[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_te3er"]
-load_path = "res://.godot/imported/4all character.png-4ddf762917b5f9a4a7dd0cb09b6bdcf7.ctex"
+[ext_resource type="Texture2D" uid="uid://bp0e0eqb0b0ky" path="res://4all/explosive bullet.png" id="4_4sj6n"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_te3er"]
-size = Vector2(60.000008, 60.000008)
+size = Vector2(210.00005, 250.00006)
 
 [node name="ExplosivePickup" instance=ExtResource("1_8g26m")]
-scale = Vector2(0.2, 0.2)
+scale = Vector2(0.05, 0.05)
 script = ExtResource("2_te3er")
 bullet_scene = ExtResource("3_4sj6n")
 
-[node name="Sprite2D" parent="." index="0"]
-texture = SubResource("CompressedTexture2D_te3er")
-
-[node name="CollisionShape2D" parent="." index="1"]
-position = Vector2(0, 0)
-scale = Vector2(0.9999998, 0.9999998)
+[node name="CollisionShape2D" parent="." index="0"]
+position = Vector2(5.0000014, 14.999991)
+scale = Vector2(0.99999964, 0.99999964)
 shape = SubResource("RectangleShape2D_te3er")
+
+[node name="Sprite2D" parent="." index="1"]
+texture = ExtResource("4_4sj6n")

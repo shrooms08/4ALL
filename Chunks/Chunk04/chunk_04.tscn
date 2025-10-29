@@ -1,13 +1,17 @@
-[gd_scene load_steps=14 format=4 uid="uid://crtvo1kuiodhn"]
+[gd_scene load_steps=18 format=4 uid="uid://crtvo1kuiodhn"]
 
 [ext_resource type="Texture2D" uid="uid://dtlm84p262rea" path="res://4all/4all Tileset/Tilemap/monochrome_tilemap_packed.png" id="1_15vd5"]
 [ext_resource type="Script" uid="uid://cntdjygv7yy4f" path="res://Chunks/Chunk04/chunk_04.gd" id="1_yebdi"]
 [ext_resource type="Texture2D" uid="uid://b1t8tww3dy52c" path="res://4all/4all Tileset/Tilemap/monochrome_tilemap_transparent_packed.png" id="2_8jrqi"]
+[ext_resource type="PackedScene" uid="uid://bh0walhaapmxf" path="res://BulletPickupBase/ExplosivePickup/explosive_pickup.tscn" id="2_oqyr1"]
 [ext_resource type="Script" uid="uid://tcu7k6fi6kk8" path="res://Chunks/Chunk04/tile_map_layer.gd" id="3_2lup8"]
 [ext_resource type="PackedScene" uid="uid://cq2dq281hhx3u" path="res://Enemies/Flyin' Enemies/Bat/bat.tscn" id="3_2ped5"]
+[ext_resource type="PackedScene" uid="uid://qm6tfcc2nekk" path="res://BulletPickupBase/HeavyPickup/heavy_pickup.tscn" id="3_irq5s"]
 [ext_resource type="Texture2D" uid="uid://x00ydnsoqyiu" path="res://4all/Door.png" id="5_n0j2k"]
 [ext_resource type="Script" uid="uid://cyietd3j4b7fx" path="res://Chunks/Chunk04/enemy_spawner.gd" id="6_lrskc"]
 [ext_resource type="PackedScene" uid="uid://ybrdxtmhgqv6" path="res://Enemies/Crawling Enemies/Worm/worm.tscn" id="7_2ped5"]
+[ext_resource type="PackedScene" uid="uid://bqaow80xpw1ts" path="res://BulletPickupBase/SplitPickup/split_pickup.tscn" id="9_prbrx"]
+[ext_resource type="PackedScene" uid="uid://bsrd313aws5uw" path="res://BulletPickupBase/HomingPickup/homing_pickup.tscn" id="10_fitd2"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_d8d0l"]
 texture = ExtResource("1_15vd5")
@@ -867,6 +871,7 @@ height = 236.0
 
 [node name="Chunk04" type="Node2D" groups=["special_chunk"]]
 script = ExtResource("1_yebdi")
+bullet_pickup_scene = Array[PackedScene]([ExtResource("9_prbrx"), ExtResource("10_fitd2"), ExtResource("3_irq5s"), ExtResource("2_oqyr1")])
 metadata/_edit_horizontal_guides_ = [0.0, 600.0, 102.0]
 metadata/_edit_vertical_guides_ = [16.0, 224.0]
 
@@ -930,3 +935,10 @@ position = Vector2(104, 395)
 
 [node name="EnemySpawn5" type="Marker2D" parent="EnemySpawner/SpawnPoints"]
 position = Vector2(201, 441)
+
+[node name="BulletPickupSpawn" type="Node2D" parent="."]
+
+[node name="SpawnPoint" type="Node2D" parent="BulletPickupSpawn"]
+
+[node name="Marker2D" type="Marker2D" parent="BulletPickupSpawn/SpawnPoint"]
+position = Vector2(-106, 274)

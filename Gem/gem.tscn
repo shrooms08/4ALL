@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://c3vr6cekwra46" path="res://Gem/gem.gd" id="1_x4t1x"]
 [ext_resource type="Texture2D" uid="uid://egpqvlp84hny" path="res://4all/tile_0062.png" id="2_qw0to"]
-[ext_resource type="Texture2D" uid="uid://bsckv2eij343i" path="res://4all/tile_0001.png" id="3_cu34n"]
+[ext_resource type="Texture2D" uid="uid://3ybf5u770htd" path="res://4all/tile_0021.png" id="3_qw0to"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_qw0to"]
 friction = 0.3
@@ -12,8 +12,8 @@ bounce = 0.6
 atlas = ExtResource("2_qw0to")
 region = Rect2(0, 0, 16, 16)
 
-[sub_resource type="AtlasTexture" id="AtlasTexture_e56nj"]
-atlas = ExtResource("3_cu34n")
+[sub_resource type="AtlasTexture" id="AtlasTexture_cu34n"]
+atlas = ExtResource("3_qw0to")
 region = Rect2(0, 0, 16, 16)
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_qh3dm"]
@@ -28,7 +28,7 @@ animations = [{
 }, {
 "frames": [{
 "duration": 1.0,
-"texture": SubResource("AtlasTexture_e56nj")
+"texture": SubResource("AtlasTexture_cu34n")
 }],
 "loop": false,
 "name": &"small",
@@ -36,7 +36,7 @@ animations = [{
 }]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_lc7pa"]
-radius = 4.0
+radius = 6.0
 height = 12.0
 
 [node name="Gem" type="RigidBody2D"]
@@ -46,12 +46,9 @@ physics_material_override = SubResource("PhysicsMaterial_qw0to")
 linear_damp = 0.2
 script = ExtResource("1_x4t1x")
 
-[node name="Sprite2D" type="Sprite2D" parent="."]
-
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
-scale = Vector2(0.5, 0.5)
 sprite_frames = SubResource("SpriteFrames_qh3dm")
-animation = &"Large"
+animation = &"small"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 scale = Vector2(0.5, 0.5)

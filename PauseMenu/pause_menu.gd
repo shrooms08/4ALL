@@ -10,29 +10,23 @@ extends CanvasLayer
 # Stats Panel
 @onready var stats_panel: Panel = $StatsPanel
 @onready var stats_back_button: Button = $StatsPanel/StatsBackButton
-@onready var stats_container: Container = $StatsPanel/StatsContainer
+@onready var stats: Label = $StatsPanel/VBoxContainer/STATS
+@onready var score_label: Label = $StatsPanel/VBoxContainer/ScoreLabel
+@onready var enemies_label: Label = $StatsPanel/VBoxContainer/EnemiesLabel
+@onready var gems_label: Label = $StatsPanel/VBoxContainer/GemsLabel
+@onready var depth_label: Label = $StatsPanel/VBoxContainer/DepthLabel
+
 
 
 # Options Panel
 @onready var options_panel: Panel = $OptionsPanel
 @onready var options_back_button: Button = $OptionsPanel/OptionsBackButton
+@onready var music_toggle: CheckButton = $OptionsPanel/VBoxContainer/MusicToggle
+@onready var timer_toggle: CheckButton = $OptionsPanel/VBoxContainer/TimerToggle
 
-
-# Audio sliders
-@onready var master_slider: HSlider = $OptionsPanel/VBoxContainer/AudioSettings/MasterVolume/MasterSlider
-@onready var music_slider: HSlider = $OptionsPanel/VBoxContainer/AudioSettings/MusicVolume/MusicSlider
-@onready var sfx_slider: HSlider = $OptionsPanel/VBoxContainer/AudioSettings/SFXVolume/SFXSlider
-
-# Audio labels
-@onready var master_label: Label = $OptionsPanel/VBoxContainer/AudioSettings/MasterVolume/MasterLabel
-@onready var music_label: Label = $OptionsPanel/VBoxContainer/AudioSettings/MusicVolume/MusicLabel
-@onready var sfx_label: Label = $OptionsPanel/VBoxContainer/AudioSettings/SFXVolume/SFXLabel
-
-# Audio
-@onready var pause_sound: AudioStreamPlayer = $Audio/PauseSound
-@onready var unpause_sound: AudioStreamPlayer = $Audio/UnpauseSound
-@onready var select_sound: AudioStreamPlayer = $Audio/SelectSound
-@onready var hover_sound: AudioStreamPlayer = $Audio/HoverSound
+# States for toggles
+var music_enabled: bool = true
+var timer_enabled: bool = true
 
 # State
 var is_paused = false
@@ -94,11 +88,11 @@ func _connect_signals() -> void:
 	#music_slider.value_changed.connect(_on_music_volume_changed)
 	#sfx_slider.value_changed.connect(_on_sfx_volume_changed)
 	
-	# Button hover effects
-	for button in _get_all_buttons():
-		button.mouse_entered.connect(_on_button_hover)
-		button.focus_entered.connect(_on_button_hover)
-		button.pressed.connect(_play_select_sound)
+	## Button hover effects
+	#for button in _get_all_buttons():
+		#button.mouse_entered.connect(_on_button_hover)
+		#button.focus_entered.connect(_on_button_hover)
+		#button.pressed.connect(_play_select_sound)
 
 
 func _get_all_buttons() -> Array[Button]:
@@ -137,9 +131,9 @@ func pause() -> void:
 	is_paused = true
 	get_tree().paused = true
 	
-	# Play pause sound
-	if pause_sound:
-		pause_sound.play()
+	## Play pause sound
+	#if pause_sound:
+		#pause_sound.play()
 	
 	# Show main panel
 	_show_panel("main")
@@ -156,9 +150,9 @@ func unpause() -> void:
 	is_paused = false
 	current_panel = "main"
 	
-	# Play unpause sound
-	if unpause_sound:
-		unpause_sound.play()
+	## Play unpause sound
+	#if unpause_sound:
+		#unpause_sound.play()
 	
 	get_tree().paused = false
 	hide()
@@ -215,55 +209,40 @@ func _on_back_to_main() -> void:
 
 
 # Sound effects
-func _on_button_hover() -> void:
-	if hover_sound:
-		hover_sound.play()
+#func _on_button_hover() -> void:
+	#if hover_sound:
+		#hover_sound.play()
 
 
-func _play_select_sound() -> void:
-	if select_sound:
-		select_sound.play()
+#func _play_select_sound() -> void:
+	#if select_sound:
+		#select_sound.play()
 
 
 # Stats System (Downwell-style)
 func _update_stats() -> void:
-	if not stats_container:
-		return
-	
-	# Clear existing stats
-	for child in stats_container.get_children():
-		child.queue_free()
-	
-	# Get game manager stats
 	var game_manager = get_tree().get_first_node_in_group("game_manager")
 	var player = get_tree().get_first_node_in_group("player")
-	
-	# Calculate play time
-	var elapsed_ms = Time.get_ticks_msec() - game_start_time
-	var elapsed_sec = elapsed_ms / 1000.0
-	var minutes = int(elapsed_sec / 60)
-	var seconds = int(elapsed_sec) % 60
-	
-	# Create stat labels (Downwell style: simple and clean)
-	_add_stat("TIME", "%02d:%02d" % [minutes, seconds])
-	
-	# Get stats from game manager if it exists
+
+	if timer_enabled:
+		var elapsed_ms = Time.get_ticks_msec() - game_start_time
+		var elapsed_sec = elapsed_ms / 1000.0
+		var minutes = int(elapsed_sec / 60)
+		var seconds = int(elapsed_sec) % 60
+		stats.text = "TIME: %02d:%02d" % [minutes, seconds]
+	else:
+		stats.text = "TIME: --:--"
+
 	if game_manager:
-		if "score" in game_manager:
-			_add_stat("SCORE", str(game_manager.score))
-		if "combo" in game_manager:
-			_add_stat("MAX COMBO", str(game_manager.max_combo if "max_combo" in game_manager else 0))
-		if "enemies_killed" in game_manager:
-			_add_stat("KILLS", str(game_manager.enemies_killed))
-		if "depth" in game_manager:
-			_add_stat("DEPTH", str(game_manager.depth) + "m")
-	
-	# Get stats from player if available
+		score_label.text = "SCORE: %d" % game_manager.score
+		enemies_label.text = "KILLS: %d" % game_manager.enemies_killed
+		gems_label.text = "GEMS: %d" % game_manager.gems_collected
+		depth_label.text = "DEPTH: %dm" % game_manager.depth
+
 	if player:
-		if "current_health" in player:
-			_add_stat("HEALTH", str(player.current_health))
-		if "current_ammo" in player:
-			_add_stat("AMMO", str(player.current_ammo))
+		score_label.text += " | HEALTH: %d" % player.current_health
+
+
 
 
 func _add_stat(stat_name: String, stat_value: String) -> void:
@@ -282,26 +261,26 @@ func _add_stat(stat_name: String, stat_value: String) -> void:
 	
 	hbox.add_child(name_label)
 	hbox.add_child(value_label)
-	stats_container.add_child(hbox)
+
 
 
 # Audio Settings
-func _on_master_volume_changed(value: float) -> void:
-	_set_bus_volume(master_bus_idx, value)
-	master_label.text = "MASTER %d%%" % int(value)
-	_save_audio_settings()
+#func _on_master_volume_changed(value: float) -> void:
+	#_set_bus_volume(master_bus_idx, value)
+	#master_label.text = "MASTER %d%%" % int(value)
+	#_save_audio_settings()
+
+#
+#func _on_music_volume_changed(value: float) -> void:
+	#_set_bus_volume(music_bus_idx, value)
+	#music_label.text = "MUSIC %d%%" % int(value)
+	#_save_audio_settings()
 
 
-func _on_music_volume_changed(value: float) -> void:
-	_set_bus_volume(music_bus_idx, value)
-	music_label.text = "MUSIC %d%%" % int(value)
-	_save_audio_settings()
-
-
-func _on_sfx_volume_changed(value: float) -> void:
-	_set_bus_volume(sfx_bus_idx, value)
-	sfx_label.text = "SFX %d%%" % int(value)
-	_save_audio_settings()
+#func _on_sfx_volume_changed(value: float) -> void:
+	#_set_bus_volume(sfx_bus_idx, value)
+	#sfx_label.text = "SFX %d%%" % int(value)
+	#_save_audio_settings()
 
 
 func _set_bus_volume(bus_idx: int, value: float) -> void:
@@ -312,13 +291,35 @@ func _set_bus_volume(bus_idx: int, value: float) -> void:
 		var db = linear_to_db(value / 100.0)
 		AudioServer.set_bus_volume_db(bus_idx, db)
 
+func _on_music_toggled(pressed: bool) -> void:
+	music_enabled = pressed
+	music_toggle.text = "Music: " + ("On" if pressed else "Off")
 
-func _save_audio_settings() -> void:
-	var config = ConfigFile.new()
-	config.set_value("audio", "master_volume", master_slider.value)
-	config.set_value("audio", "music_volume", music_slider.value)
-	config.set_value("audio", "sfx_volume", sfx_slider.value)
-	config.save("user://settings.cfg")
+	# Find background music (you probably added it in PlayScene)
+	var music_player = get_tree().get_first_node_in_group("background_music")
+	if music_player:
+		music_player.playing = pressed  # Turn on/off
+
+	print("Music toggled:", pressed)
+
+
+func _on_timer_toggled(pressed: bool) -> void:
+	timer_enabled = pressed
+	timer_toggle.text = "Timer: " + ("On" if pressed else "Off")
+
+	var player_ui = get_tree().get_first_node_in_group("player_ui")
+	if player_ui:
+		player_ui.set_timer_visible(pressed)
+
+
+
+
+#func _save_audio_settings() -> void:
+	#var config = ConfigFile.new()
+	#config.set_value("audio", "master_volume", master_slider.value)
+	#config.set_value("audio", "music_volume", music_slider.value)
+	#config.set_value("audio", "sfx_volume", sfx_slider.value)
+	#config.save("user://settings.cfg")
 
 
 #func _load_audio_settings() -> void:
