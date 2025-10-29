@@ -10,6 +10,10 @@ extends CanvasLayer
 @onready var bullet_count: Label = $HBoxContainer3/BulletCount
 @onready var timer_label: Label = $TimerLabel
 
+# Viewer interaction notification
+var notification_label: Label = null
+var notification_queue: Array = []
+var notification_showing: bool = false
 
 var player: Node = null
 var elapsed_time: float = 0.0
@@ -44,6 +48,23 @@ func _ready():
 		print("PlayerUI: ERROR - No player_path set!")
 	
 	timer_label.text = "0:00:00"
+	
+	# Create notification label
+	_setup_notification_label()
+	add_to_group("player_ui")
+
+func _setup_notification_label() -> void:
+	"""Create a label for viewer interaction notifications"""
+	notification_label = Label.new()
+	notification_label.name = "ViewerNotification"
+	notification_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	notification_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	notification_label.position = Vector2(0, 200)
+	notification_label.size = Vector2(1152, 100)
+	notification_label.add_theme_font_size_override("font_size", 32)
+	notification_label.modulate = Color(1, 1, 1, 0)
+	notification_label.z_index = 100
+	add_child(notification_label)
 
 func _process(delta: float) -> void:
 	if player and player.is_inside_tree() and not get_tree().paused:
@@ -81,3 +102,37 @@ func _on_ammo_changed(current: int, max: int) -> void:
 func set_timer_visible(visible: bool) -> void:
 	if timer_label:
 		timer_label.visible = visible
+
+# Viewer Interaction Notifications
+
+func show_notification(text: String, color: Color = Color.WHITE, duration: float = 2.0) -> void:
+	"""Show a notification about viewer interaction"""
+	notification_queue.append({"text": text, "color": color, "duration": duration})
+	
+	if not notification_showing:
+		_show_next_notification()
+
+func _show_next_notification() -> void:
+	if notification_queue.is_empty():
+		notification_showing = false
+		return
+	
+	notification_showing = true
+	var notif = notification_queue.pop_front()
+	
+	if not notification_label:
+		notification_showing = false
+		return
+	
+	notification_label.text = notif.text
+	notification_label.modulate = notif.color
+	notification_label.modulate.a = 0
+	
+	# Fade in
+	var tween = create_tween()
+	tween.tween_property(notification_label, "modulate:a", 1.0, 0.3)
+	tween.tween_interval(notif.duration)
+	tween.tween_property(notification_label, "modulate:a", 0.0, 0.3)
+	
+	await tween.finished
+	_show_next_notification()
