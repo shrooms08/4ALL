@@ -11,6 +11,7 @@
 [ext_resource type="FontFile" uid="uid://dtiujgu3wn57w" path="res://4all/Pixeled.ttf" id="7_t8b1b"]
 [ext_resource type="PackedScene" uid="uid://bl8ldvwumudpw" path="res://AudienceEnemySpawner/audience_enemy_spawner.tscn" id="8_t8b1b"]
 [ext_resource type="PackedScene" uid="uid://nd3ktiqluxoo" path="res://PlayerUI/player_ui.tscn" id="9_2amxo"]
+[ext_resource type="Script" uid="uid://dk4q3k7m8gvnl" path="res://Manager/viewer_interaction_manager.gd" id="10_vorld"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_2amxo"]
 font = ExtResource("7_t8b1b")
@@ -72,6 +73,9 @@ offset_bottom = 33.0
 script = ExtResource("4_t8b1b")
 
 [node name="AudienceEnemySpawner" parent="." instance=ExtResource("8_t8b1b")]
+
+[node name="ViewerInteractionManager" type="Node" parent="."]
+script = ExtResource("10_vorld")
 
 [node name="MusicPlayer" type="AudioStreamPlayer" parent="." groups=["background_music"]]
 volume_db = -15.0
