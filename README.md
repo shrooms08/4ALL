@@ -7,14 +7,14 @@ Dive into an endless descent filled with danger, rhythm, and retro charm.
 
 ## 🕹️ Gameplay
 
-You play as **[your character’s name or description]**, endlessly falling down a mysterious hole.
+You play as **[Slime]**, endlessly falling down a mysterious hole.
 Shoot, dodge, and dash your way through waves of enemies and obstacles.
 Every level down brings new challenges — timing, precision, and quick thinking are your only allies.
 
 ### ✦ Core Features
 
 * **Endless Descent:** Keep falling; the only way out is down.
-* **Retro Aesthetic:** Old Disney cartoon-inspired visuals with smooth pixel animation.
+* **Retro Aesthetic:** Pixel animation.
 * **Dynamic Combat:** Blast enemies mid-fall to stay alive and chain combos.
 * **Power-ups:** Collect gems to unlock boosts and new abilities.
 * **Leaderboard:** Compete for the *Deepest Fall* — how far can you go?
@@ -55,14 +55,14 @@ Play the latest build here:
 
 **Game Design & Art:** oghenerukevwe eminokanju
 **Engine:** Godot
-**Special Thanks:** The Solana dev community & Honeycomb Protocol
+**Special Thanks:** The Solana dev community & Airdrop Arcade
 
 ---
 
 ## 🌐 Links
 
 * 🎮 [Play on Itch.io](https://shroomsgotsol.itch.io/4all)
-* 🧵 Follow updates on Twitter: [@CookxelDAO](https://twitter.com/4allthegame
+* 🧵 Follow updates on Twitter: [@4allthegame](https://twitter.com/4allthegame
 
 ---
 
