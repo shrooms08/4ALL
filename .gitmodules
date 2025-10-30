@@ -1,0 +1,3 @@
+[submodule "4ALL_server"]
+	path = 4ALL_server
+	url = https://github.com/shrooms08/4all_server.git
