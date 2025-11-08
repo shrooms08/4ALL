@@ -19,8 +19,8 @@ config/icon="res://icon.svg"
 
 GameManager="*res://Manager/game_manager.gd"
 GemSpawner="*res://Manager/gem_spawner.gd"
-ComboManagr="*res://Manager/combo_managr.gd"
 AudienceSpawn="*res://AudienceEnemySpawner/audience_enemy_spawner.gd"
+ComboManagr="*res://Manager/combo_manager.gd"
 
 [display]
 

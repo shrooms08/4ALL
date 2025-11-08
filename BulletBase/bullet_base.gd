@@ -1,4 +1,3 @@
-# bullet_base.gd
 extends Area2D
 class_name BulletBase
 
@@ -25,13 +24,6 @@ func _ready() -> void:
 	if is_instance_valid(self):
 		on_lifetime_expired()
 
-# Virtual method for child classes to override
-func on_bullet_ready() -> void:
-	pass
-
-# Virtual method for when lifetime expires
-func on_lifetime_expired() -> void:
-	queue_free()
 
 func setup(angle: float, bullet_damage: float = 10.0):
 	direction = Vector2(cos(angle), sin(angle)).normalized()
@@ -40,13 +32,25 @@ func setup(angle: float, bullet_damage: float = 10.0):
 	damage = bullet_damage
 	on_setup_complete()
 
-# Virtual method for additional setup in child classes
+
+func on_bullet_ready() -> void:
+	pass
+
+func on_lifetime_expired() -> void:
+	queue_free()
+
 func on_setup_complete() -> void:
 	pass
 
-# Virtual method to allow child classes to modify speed
 func get_bullet_speed() -> float:
 	return SPEED
+
+func get_max_distance() -> float:
+	return MAX_DISTANCE
+
+func update_bullet_physics(delta: float) -> void:
+	pass
+
 
 func _physics_process(delta: float) -> void:
 	if has_been_destroyed:
@@ -65,17 +69,9 @@ func _physics_process(delta: float) -> void:
 	if distance_traveled >= get_max_distance():
 		on_max_distance_reached()
 
-# Virtual method for custom physics behavior
-func update_bullet_physics(delta: float) -> void:
-	pass
-
-# Virtual method to allow child classes to modify max distance
-func get_max_distance() -> float:
-	return MAX_DISTANCE
-
-# Virtual method for when max distance is reached
 func on_max_distance_reached() -> void:
 	queue_free()
+
 
 func check_tiles_in_path(from: Vector2, to: Vector2):
 	var tilemap = get_tree().get_first_node_in_group("breakable_tiles")
@@ -107,7 +103,7 @@ func _on_body_entered(body: Node2D) -> void:
 		on_hit_enemy(body)
 		return
 	
-	if !body.is_in_group("player"):
+	if not body.is_in_group("player"):
 		has_been_destroyed = true
 		on_hit_obstacle(body)
 
@@ -122,21 +118,27 @@ func _on_area_entered(area: Area2D) -> void:
 		parent.take_damage(damage, knockback_dir, knockback_force)
 		on_hit_enemy(parent)
 
-# Virtual methods for hit events that child classes can override
+
 func on_hit_tile(tile: Node2D) -> void:
 	queue_free()
 
 func on_hit_enemy(enemy: Node2D) -> void:
-	# Register hit for accuracy tracking
-	GameManager.register_hit()
+	# Track shot accuracy
+	if Engine.has_singleton("GameManager"):
+		GameManager.register_hit()
 	
-	# Register kill with combo if it kills the enemy
-	if enemy.has_method("take_damage"):
-		enemy.take_damage(damage)
-		
-		# Check if enemy died and register with combo
-		if enemy.has_method("is_alive") and not enemy.is_alive():
+	# Check if enemy died after taking damage
+	var enemy_died := false
+	if enemy.has_method("is_alive"):
+		enemy_died = not enemy.is_alive()
+	
+	# Register combo or XP if kill confirmed
+	if enemy_died:
+		if Engine.has_singleton("ComboManager"):
 			ComboManagr.register_shot_kill()
+		if Engine.has_singleton("GameManager"):
+			GameManager.register_kill()
+	
 	queue_free()
 
 func on_hit_obstacle(obstacle: Node2D) -> void:

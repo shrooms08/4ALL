@@ -89,6 +89,13 @@ text = "RETRY"
 flat = true
 alignment = 0
 
+[node name="Profile" type="Button" parent="Panel/VBoxContainer"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("1_tobvk")
+theme_override_font_sizes/font_size = 14
+text = "PROFILE"
+flat = true
+
 [node name="Stats" type="Button" parent="Panel/VBoxContainer"]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("1_tobvk")
@@ -170,6 +177,72 @@ horizontal_alignment = 1
 layout_mode = 2
 label_settings = SubResource("LabelSettings_au66y")
 horizontal_alignment = 1
+
+[node name="ProfilePanel" type="Panel" parent="."]
+anchors_preset = -1
+anchor_top = 0.094000004
+anchor_right = 1.0
+anchor_bottom = 0.873
+offset_top = -1.6000023
+offset_bottom = 1.7999878
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxEmpty_tfo3q")
+
+[node name="ProfileBackButton" type="Button" parent="ProfilePanel"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.5
+anchor_top = 0.95600003
+anchor_right = 0.5
+anchor_bottom = 0.95600003
+offset_left = -36.0
+offset_top = -18.140015
+offset_right = 36.0
+offset_bottom = 35.859985
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_fonts/font = ExtResource("1_tobvk")
+theme_override_font_sizes/font_size = 10
+text = "BACK"
+flat = true
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ProfilePanel"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -64.0
+offset_top = -24.0
+offset_right = 66.0
+offset_bottom = 152.0
+grow_horizontal = 2
+
+[node name="PlayerNameLabel" type="Label" parent="ProfilePanel/VBoxContainer"]
+layout_mode = 2
+label_settings = SubResource("LabelSettings_tfo3q")
+horizontal_alignment = 1
+
+[node name="XPBar" type="ProgressBar" parent="ProfilePanel/VBoxContainer"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("1_tobvk")
+
+[node name="Traits" type="Label" parent="ProfilePanel/VBoxContainer"]
+layout_mode = 2
+label_settings = SubResource("LabelSettings_q8wey")
+horizontal_alignment = 1
+
+[node name="TraitsList" type="VBoxContainer" parent="ProfilePanel/VBoxContainer"]
+layout_mode = 2
+
+[node name="Missions" type="Label" parent="ProfilePanel/VBoxContainer"]
+layout_mode = 2
+
+[node name="MissionList" type="VBoxContainer" parent="ProfilePanel/VBoxContainer"]
+layout_mode = 2
+
+[node name="ProfileStatsContainer" type="VBoxContainer" parent="ProfilePanel/VBoxContainer"]
+layout_mode = 2
 
 [node name="OptionsPanel" type="Panel" parent="."]
 anchors_preset = -1

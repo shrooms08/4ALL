@@ -20,12 +20,13 @@ extends CharacterBody2D
 
 
 # Health System
-const MAX_HEALTH = 4
+const MAX_HEALTH = 20
 var current_health = MAX_HEALTH
 var is_invincible = false
 const INVINCIBILITY_TIME = 1.0  # Seconds of invincibility after getting hurt
 const KNOCKBACK_FORCE = 400  # Horizontal knockback when hurt
 const KNOCKBACK_UP = -300  # Upward knockback when hurt
+
 
 signal health_changed(new_health)
 signal player_died()
@@ -120,6 +121,11 @@ var _enemy_reset_timer := 0.0
 var _hurt_tween: Tween = null
 
 
+# Depth Calculation
+var starting_y: float = 0.0
+const PIXELS_PER_METER: float = 10.0  # Every 10 pixels = 1 meter
+
+
 #endregion
 
 
@@ -127,6 +133,9 @@ var _hurt_tween: Tween = null
 
 func _ready() -> void:
 	add_to_group("player")
+	
+	# Store starting Y position for depth calculation
+	starting_y = global_position.y
 	
 	# Validate weapon manager
 	if not weapon_manager:
@@ -231,6 +240,9 @@ func _physics_process(delta: float) -> void:
 	
 	# Get Input States
 	get_input_states()
+	
+	# Update depth based on position
+	_update_depth()
 
 	# Shooting while airborne (Downwell-style)
 	if not is_on_floor() and key_jump_pressed:
@@ -359,39 +371,41 @@ func stomp_enemy(enemy):
 		stomp.play()
 	
 	# Register stomp with ComboManager
-	ComboManagr.register_stomp()
-	
-	# Call on_stomped method if it exists (for custom stomp behavior)
+	if ComboManagr:
+		ComboManagr.register_stomp()
+	else:
+		print("ComboManager not found")
+
+	# Notify GameManager for XP/score gain
+	if GameManager:
+		GameManager.register_kill()
+	else:
+		print("GameManager not found")
+
+	# Call on_stomped method if it exists (for custom behavior)
 	if enemy.has_method("on_stomped"):
-		print("Calling on_stomped()")
 		enemy.on_stomped()
-	
-	# Kill the enemy
+
+	# Kill enemy safely
 	if enemy.has_method("die"):
-		print("Calling die()")
 		enemy.die()
 	elif enemy.has_method("kill"):
-		print("Calling kill()")
 		enemy.kill()
 	else:
-		# Fallback: just remove the enemy
-		print("Fallback: queue_free()")
 		enemy.queue_free()
 	
-	# Reload ammo (capped at MAX_AMMO)
+	# Reload ammo (capped)
 	current_ammo = min(current_ammo + STOMP_AMMO_REWARD, max_ammo)
 	emit_signal("ammo_changed", current_ammo, max_ammo)
 	
 	# Apply bounce
 	velocity.y = STOMP_BOUNCE
-	
-	# Reset jump count to allow chaining stomps
 	jumps = 0
 	
-	# Emit signal for feedback (sound, particles, etc.)
+	# Feedback signal
 	emit_signal("enemy_stomped")
-	
-	print("Enemy stomped! Ammo: ", current_ammo)
+	print("Enemy stomped! Ammo:", current_ammo)
+
 
 
 #endregion
@@ -450,35 +464,31 @@ func die():
 	is_dead = true
 	emit_signal("player_died")
 	
-	# Stop all physics processing immediately
+	# Stop movement and physics
 	set_physics_process(false)
 	velocity = Vector2.ZERO
 	
-	# Reset combo on death
-	ComboManagr.reset_combo()
+	# Reset Combo & notify GameManager
+	if GameManager:
+		ComboManagr.reset_combo()
+		GameManager.reset_profile()
 	
-	# Save high score
-	GameManager.save_high_score()
-	
-	# Stop all movement
-	velocity = Vector2.ZERO
-	
-	# Play death animation
-	player_animation.play("die")
+	# Death animation
 	if player_animation and player_animation.sprite_frames.has_animation("die"):
 		player_animation.play("die")
-		# Wait for animation or timeout
-		await get_tree().create_timer(1.0).timeout
-	 
+	
+	if hurt:
+		hurt.play()
+
+	# Wait briefly before restarting
+	await get_tree().create_timer(1.0).timeout
 	
 	if not is_instance_valid(self):
 		return
 	
-	# Reset stats for new game
-	GameManager.reset_stats()
-	ComboManagr.reset_stats()
-	
+	# Reload scene for quick demo loop
 	get_tree().call_deferred("reload_current_scene")
+
 
 
 func _on_hurt_timer_timeout():
@@ -499,10 +509,15 @@ func stop_hurt_flash():
 	modulate.a = 1.0
 
 
-
 func heal(amount: int = 1):
 	current_health = min(current_health + amount, MAX_HEALTH)
 	emit_signal("health_changed", current_health)
+
+
+func restore_full_health() -> void:
+	current_health = MAX_HEALTH
+	emit_signal("health_changed", current_health)
+	print("Player fully healed to max health!")
 
 
 #endregion
@@ -534,6 +549,19 @@ func horizontal_movement(acceleration: float = Acceleration, deceleration: float
 		velocity.x = move_toward(velocity.x, move_direction_x * move_speed, acceleration)
 	else:
 		velocity.x = move_toward(velocity.x, move_direction_x * move_speed, deceleration)
+
+
+func _update_depth() -> void:
+	"""Calculate and update the player's depth based on vertical position"""
+	# Calculate how far the player has descended from starting position
+	var distance_fallen = global_position.y - starting_y
+	
+	# Convert pixels to meters (only count downward movement)
+	var current_depth = max(0, int(distance_fallen / PIXELS_PER_METER))
+	
+	# Update GameManager (it will only update if this is a new max depth)
+	if GameManager:
+		GameManager.update_depth(current_depth)
 
 
 func handle_fall():
@@ -671,8 +699,10 @@ func _execute_shoot() -> void:
 		push_error("No bullet scene available from weapon manager!")
 		return
 	
-	# Register shot with Game.Manager
-	GameManager.register_shot()
+	# Track shot
+	if GameManager:
+		GameManager.register_shot()
+
 	
 	# Spawn bullets
 	_spawn_bullets(bullet_scene, damage)

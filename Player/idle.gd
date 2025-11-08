@@ -19,8 +19,8 @@ func update(delta: float) -> void:
 		Player.change_state(States.jump)
 		return
 	#Player.handle_jump()
-	Player.handle_fall()
 	Player.horizontal_movement()
+	Player.handle_fall()
 	#if Player.move_direction_x != 0:
 		#Player.change_state(States.run)
 	handle_animation()

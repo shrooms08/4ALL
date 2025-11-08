@@ -1,0 +1,56 @@
+[gd_scene load_steps=4 format=3 uid="uid://by5ejlgxa3knt"]
+
+[ext_resource type="FontFile" uid="uid://dtiujgu3wn57w" path="res://4all/Pixeled.ttf" id="1_6ivnm"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_higsu"]
+font = ExtResource("1_6ivnm")
+
+[sub_resource type="LabelSettings" id="LabelSettings_pvli0"]
+font = ExtResource("1_6ivnm")
+
+[node name="PlayerProfileUI" type="Node2D"]
+
+[node name="Panel" type="Panel" parent="."]
+offset_right = 240.0
+offset_bottom = 400.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PlayerName" type="Label" parent="Panel/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 0
+label_settings = SubResource("LabelSettings_higsu")
+
+[node name="XP+Level" type="HBoxContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Panel/VBoxContainer/XP+Level"]
+layout_mode = 2
+label_settings = SubResource("LabelSettings_pvli0")
+
+[node name="XpBar" type="ProgressBar" parent="Panel/VBoxContainer/XP+Level"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("1_6ivnm")
+
+[node name="Traits" type="Label" parent="Panel/VBoxContainer"]
+layout_mode = 2
+
+[node name="TraitsList" type="VBoxContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+
+[node name="Missions" type="Label" parent="Panel/VBoxContainer"]
+layout_mode = 2
+
+[node name="MissionsList" type="VBoxContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+
+[node name="Close" type="Button" parent="Panel"]
+layout_mode = 0
+offset_right = 8.0
+offset_bottom = 8.0

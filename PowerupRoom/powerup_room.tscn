@@ -1,0 +1,53 @@
+[gd_scene load_steps=4 format=3 uid="uid://b77ikm2fu0fdn"]
+
+[ext_resource type="FontFile" uid="uid://dtiujgu3wn57w" path="res://4all/Pixeled.ttf" id="1_2qv14"]
+[ext_resource type="Script" uid="uid://c0a4f5pi0eagj" path="res://PowerupRoom/powerup_room.gd" id="1_8ywxc"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_8ywxc"]
+font = ExtResource("1_2qv14")
+font_size = 10
+
+[node name="PowerupRoom" type="Node2D"]
+script = ExtResource("1_8ywxc")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="ColorRect" type="ColorRect" parent="CanvasLayer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.7058824)
+
+[node name="TitleLabel" type="Label" parent="CanvasLayer"]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -97.0
+offset_top = -122.0
+offset_right = 97.0
+offset_bottom = -94.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 4
+text = "Choose Your Power-Up!"
+label_settings = SubResource("LabelSettings_8ywxc")
+
+[node name="CenterContainer" type="CenterContainer" parent="CanvasLayer"]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -20.0
+offset_right = 20.0
+offset_bottom = 20.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PowerupContainer" type="HBoxContainer" parent="CanvasLayer/CenterContainer"]
+layout_mode = 2

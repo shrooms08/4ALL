@@ -409,6 +409,7 @@ use_auto_limits = false
 manual_limit_left = 14
 manual_limit_top = 0
 manual_limit_right = 226
+manual_limit_bottom = 100000000000000
 
 [node name="ShootPoint" type="Marker2D" parent="."]
 position = Vector2(0, 72.5)

@@ -6,6 +6,7 @@ extends CanvasLayer
 @onready var retry_button: Button = $Panel/VBoxContainer/Retry
 @onready var stats_button: Button = $Panel/VBoxContainer/Stats
 @onready var options_button: Button = $Panel/VBoxContainer/Option
+@onready var profile_button: Button = $Panel/VBoxContainer/Profile
 
 # Stats Panel
 @onready var stats_panel: Panel = $StatsPanel
@@ -16,6 +17,14 @@ extends CanvasLayer
 @onready var gems_label: Label = $StatsPanel/VBoxContainer/GemsLabel
 @onready var depth_label: Label = $StatsPanel/VBoxContainer/DepthLabel
 
+# Profile Panel
+@onready var profile_panel: Panel = $ProfilePanel
+@onready var profile_back_button: Button = $ProfilePanel/ProfileBackButton
+@onready var player_name_label: Label = $ProfilePanel/VBoxContainer/PlayerNameLabel
+@onready var xp_bar: ProgressBar = $ProfilePanel/VBoxContainer/XPBar
+@onready var traits_list: VBoxContainer = $ProfilePanel/VBoxContainer/TraitsList
+@onready var mission_list: VBoxContainer = $ProfilePanel/VBoxContainer/MissionList
+@onready var profile_stats_container: VBoxContainer = $ProfilePanel/VBoxContainer/ProfileStatsContainer  # Add this node in your scene
 
 
 # Options Panel
@@ -24,6 +33,7 @@ extends CanvasLayer
 @onready var music_toggle: CheckButton = $OptionsPanel/VBoxContainer/MusicToggle
 @onready var timer_toggle: CheckButton = $OptionsPanel/VBoxContainer/TimerToggle
 
+
 # States for toggles
 var music_enabled: bool = true
 var timer_enabled: bool = true
@@ -31,7 +41,7 @@ var timer_enabled: bool = true
 # State
 var is_paused = false
 var can_pause = true
-var current_panel = "main"  # "main", "stats", "options"
+var current_panel = "main"  # "main", "stats", "options", "profile"
 
 # Audio bus indices
 var master_bus_idx: int
@@ -49,6 +59,7 @@ func _ready() -> void:
 	pause_panel.hide()
 	stats_panel.hide()
 	options_panel.hide()
+	profile_panel.hide()
 	
 	# Get audio bus indices
 	master_bus_idx = AudioServer.get_bus_index("Master")
@@ -58,8 +69,11 @@ func _ready() -> void:
 	# Connect button signals
 	_connect_signals()
 	
-	# Load saved audio settings
-	#_load_audio_settings()
+	# Setup initial toggle states
+	music_toggle.button_pressed = music_enabled
+	timer_toggle.button_pressed = timer_enabled
+	music_toggle.text = "Music: " + ("On" if music_enabled else "Off")
+	timer_toggle.text = "Timer: " + ("On" if timer_enabled else "Off")
 	
 	# Setup initial focus
 	resume_button.grab_focus()
@@ -78,28 +92,23 @@ func _connect_signals() -> void:
 	retry_button.pressed.connect(_on_retry_pressed)
 	stats_button.pressed.connect(_on_stats_pressed)
 	options_button.pressed.connect(_on_options_pressed)
+	profile_button.pressed.connect(_on_profile_pressed)
 	
 	# Panel back buttons
 	stats_back_button.pressed.connect(_on_back_to_main)
 	options_back_button.pressed.connect(_on_back_to_main)
+	profile_back_button.pressed.connect(_on_back_to_main)
 	
-	## Audio sliders
-	#master_slider.value_changed.connect(_on_master_volume_changed)
-	#music_slider.value_changed.connect(_on_music_volume_changed)
-	#sfx_slider.value_changed.connect(_on_sfx_volume_changed)
-	
-	## Button hover effects
-	#for button in _get_all_buttons():
-		#button.mouse_entered.connect(_on_button_hover)
-		#button.focus_entered.connect(_on_button_hover)
-		#button.pressed.connect(_play_select_sound)
+	# Options toggles
+	music_toggle.toggled.connect(_on_music_toggled)
+	timer_toggle.toggled.connect(_on_timer_toggled)
 
 
 func _get_all_buttons() -> Array[Button]:
 	var buttons: Array[Button] = []
 	buttons.append_array([
 		resume_button, retry_button, stats_button, options_button,
-		stats_back_button, options_back_button
+		stats_back_button, options_back_button, profile_button
 	])
 	return buttons
 
@@ -131,10 +140,6 @@ func pause() -> void:
 	is_paused = true
 	get_tree().paused = true
 	
-	## Play pause sound
-	#if pause_sound:
-		#pause_sound.play()
-	
 	# Show main panel
 	_show_panel("main")
 	show()
@@ -150,15 +155,12 @@ func unpause() -> void:
 	is_paused = false
 	current_panel = "main"
 	
-	## Play unpause sound
-	#if unpause_sound:
-		#unpause_sound.play()
-	
 	get_tree().paused = false
 	hide()
 	pause_panel.hide()
 	stats_panel.hide()
 	options_panel.hide()
+	profile_panel.hide()
 
 
 func _show_panel(panel_name: String) -> void:
@@ -168,7 +170,8 @@ func _show_panel(panel_name: String) -> void:
 	pause_panel.hide()
 	stats_panel.hide()
 	options_panel.hide()
-	
+	profile_panel.hide()
+
 	# Show requested panel
 	match panel_name:
 		"main":
@@ -181,6 +184,10 @@ func _show_panel(panel_name: String) -> void:
 		"options":
 			options_panel.show()
 			options_back_button.grab_focus()
+		"profile":
+			_update_profile()
+			profile_panel.show()
+			profile_back_button.grab_focus()
 
 
 # Button callbacks
@@ -208,22 +215,12 @@ func _on_back_to_main() -> void:
 	_show_panel("main")
 
 
-# Sound effects
-#func _on_button_hover() -> void:
-	#if hover_sound:
-		#hover_sound.play()
-
-
-#func _play_select_sound() -> void:
-	#if select_sound:
-		#select_sound.play()
-
-
 # Stats System (Downwell-style)
 func _update_stats() -> void:
-	var game_manager = get_tree().get_first_node_in_group("game_manager")
+	var game_manager = GameManager
 	var player = get_tree().get_first_node_in_group("player")
 
+	# Update timer
 	if timer_enabled:
 		var elapsed_ms = Time.get_ticks_msec() - game_start_time
 		var elapsed_sec = elapsed_ms / 1000.0
@@ -233,19 +230,57 @@ func _update_stats() -> void:
 	else:
 		stats.text = "TIME: --:--"
 
+	# Update stats from GameManager
 	if game_manager:
 		score_label.text = "SCORE: %d" % game_manager.score
 		enemies_label.text = "KILLS: %d" % game_manager.enemies_killed
-		gems_label.text = "GEMS: %d" % game_manager.gems_collected
+		
+		# Check if gems_collected exists, otherwise use 0
+		if "gems_collected" in game_manager:
+			gems_label.text = "GEMS: %d" % game_manager.gems_collected
+		else:
+			gems_label.text = "GEMS: 0"
+			
 		depth_label.text = "DEPTH: %dm" % game_manager.depth
 
-	if player:
+	# Add player health if available
+	if player and "current_health" in player:
 		score_label.text += " | HEALTH: %d" % player.current_health
 
 
+func _update_profile() -> void:
+	var gm = GameManager
+	
+	if not gm:
+		print("GameManager not found!")
+		return
+
+	# Update basic info
+	player_name_label.text = gm.player_name
+
+	# XP bar setup
+	var xp_to_next = gm.xp_to_next_level
+	xp_bar.max_value = xp_to_next
+	xp_bar.value = gm.total_xp
+	
+	# Clear existing stats (if ProfileStatsContainer exists)
+	if profile_stats_container:
+		for child in profile_stats_container.get_children():
+			child.queue_free()
+		
+		# Add stats
+		_add_stat("Level", str(gm.level))
+		_add_stat("Score", str(gm.score))
+		_add_stat("High Score", str(gm.high_score))
+		_add_stat("Kills", str(gm.enemies_killed))
+		_add_stat("Depth", str(gm.depth) + "m")
 
 
 func _add_stat(stat_name: String, stat_value: String) -> void:
+	if not profile_stats_container:
+		print("ProfileStatsContainer not found! Add a VBoxContainer node to your ProfilePanel.")
+		return
+		
 	var hbox = HBoxContainer.new()
 	hbox.add_theme_constant_override("separation", 20)
 	
@@ -261,28 +296,11 @@ func _add_stat(stat_name: String, stat_value: String) -> void:
 	
 	hbox.add_child(name_label)
 	hbox.add_child(value_label)
-
+	
+	profile_stats_container.add_child(hbox)
 
 
 # Audio Settings
-#func _on_master_volume_changed(value: float) -> void:
-	#_set_bus_volume(master_bus_idx, value)
-	#master_label.text = "MASTER %d%%" % int(value)
-	#_save_audio_settings()
-
-#
-#func _on_music_volume_changed(value: float) -> void:
-	#_set_bus_volume(music_bus_idx, value)
-	#music_label.text = "MUSIC %d%%" % int(value)
-	#_save_audio_settings()
-
-
-#func _on_sfx_volume_changed(value: float) -> void:
-	#_set_bus_volume(sfx_bus_idx, value)
-	#sfx_label.text = "SFX %d%%" % int(value)
-	#_save_audio_settings()
-
-
 func _set_bus_volume(bus_idx: int, value: float) -> void:
 	if value <= 0:
 		AudioServer.set_bus_mute(bus_idx, true)
@@ -291,14 +309,15 @@ func _set_bus_volume(bus_idx: int, value: float) -> void:
 		var db = linear_to_db(value / 100.0)
 		AudioServer.set_bus_volume_db(bus_idx, db)
 
+
 func _on_music_toggled(pressed: bool) -> void:
 	music_enabled = pressed
 	music_toggle.text = "Music: " + ("On" if pressed else "Off")
 
-	# Find background music (you probably added it in PlayScene)
+	# Find background music
 	var music_player = get_tree().get_first_node_in_group("background_music")
 	if music_player:
-		music_player.playing = pressed  # Turn on/off
+		music_player.playing = pressed
 
 	print("Music toggled:", pressed)
 
@@ -308,37 +327,14 @@ func _on_timer_toggled(pressed: bool) -> void:
 	timer_toggle.text = "Timer: " + ("On" if pressed else "Off")
 
 	var player_ui = get_tree().get_first_node_in_group("player_ui")
-	if player_ui:
+	if player_ui and "set_timer_visible" in player_ui:
 		player_ui.set_timer_visible(pressed)
+	
+	print("Timer toggled:", pressed)
 
 
-
-
-#func _save_audio_settings() -> void:
-	#var config = ConfigFile.new()
-	#config.set_value("audio", "master_volume", master_slider.value)
-	#config.set_value("audio", "music_volume", music_slider.value)
-	#config.set_value("audio", "sfx_volume", sfx_slider.value)
-	#config.save("user://settings.cfg")
-
-
-#func _load_audio_settings() -> void:
-	#var config = ConfigFile.new()
-	#var err = config.load("user://settings.cfg")
-	#
-	#if err != OK:
-		#master_slider.value = 100
-		#music_slider.value = 80
-		#sfx_slider.value = 100
-		#return
-	#
-	#master_slider.value = config.get_value("audio", "master_volume", 100)
-	#music_slider.value = config.get_value("audio", "music_volume", 80)
-	#sfx_slider.value = config.get_value("audio", "sfx_volume", 100)
-	#
-	#_on_master_volume_changed(master_slider.value)
-	#_on_music_volume_changed(music_slider.value)
-	#_on_sfx_volume_changed(sfx_slider.value)
+func _on_profile_pressed() -> void:
+	_show_panel("profile")
 
 
 # Public methods
