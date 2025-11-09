@@ -5,6 +5,10 @@ var user_id: String = ""
 var player_name: String = "Player"
 var email: String = ""
 var login_type: String = "guest"  # guest, username, wallet
+var access_token: String = ""
+var refresh_token: String = ""
+var profile: Dictionary = {}
+var display_name: String = ""
 
 # ===== PLAYER STATS =====
 var level: int = 1
@@ -101,6 +105,10 @@ func _load_user_session() -> void:
 	user_id = session_data.get("user_id", "")
 	login_type = session_data.get("login_type", "guest")
 	email = session_data.get("email", "")
+	access_token = session_data.get("access_token", "")
+	refresh_token = session_data.get("refresh_token", "")
+	profile = session_data.get("profile", {})
+	display_name = session_data.get("display_name", "")
 	
 	if user_id.is_empty():
 		push_warning("Empty user ID. Creating guest session.")
@@ -108,8 +116,10 @@ func _load_user_session() -> void:
 		return
 	
 	# Set player name based on login type
-	if login_type == "username":
-		player_name = user_id
+	if not display_name.is_empty():
+		player_name = display_name
+	elif profile.has("username"):
+		player_name = str(profile["username"])
 	elif login_type == "wallet":
 		player_name = "Wallet_" + user_id.substr(0, 8)
 	else:
@@ -132,6 +142,10 @@ func _create_guest_session() -> void:
 	player_name = user_id
 	login_type = "guest"
 	email = ""
+	access_token = ""
+	refresh_token = ""
+	profile = {}
+	display_name = ""
 	print("🎮 Guest session created:", user_id)
 
 

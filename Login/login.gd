@@ -41,6 +41,12 @@ const MAIN_MENU_SCENE = "res://PlayScene/play_scene.tscn"
 const MAX_LOGIN_ATTEMPTS = 5
 const LOCKOUT_TIME = 300  # 5 minutes in seconds
 
+const DEFAULT_API_BASE_URL := "http://localhost:9080"
+const DEFAULT_API_PATH := "/api"
+const API_TIMEOUT_SECONDS := 30.0
+
+enum SignupState { FORM, OTP_PENDING }
+
 # ===== SIGNALS =====
 signal login_successful(user_data: Dictionary)
 signal signup_successful(user_data: Dictionary)
@@ -49,6 +55,14 @@ signal signup_successful(user_data: Dictionary)
 enum PanelState { WELCOME, LOGIN, SIGNUP }
 var current_panel: PanelState = PanelState.WELCOME
 var _login_attempts: Dictionary = {}  # Track failed login attempts
+var _api_base_url: String = DEFAULT_API_BASE_URL
+var _api_path_prefix: String = DEFAULT_API_PATH
+var _signup_state: SignupState = SignupState.FORM
+var _pending_signup_email: String = ""
+var _pending_signup_password: String = ""
+var _pending_signup_username: String = ""
+var _default_signup_button_text: String = ""
+var _default_confirm_placeholder: String = ""
 
 
 func _ready() -> void:
@@ -63,7 +77,7 @@ func _setup_ui() -> void:
 	_show_panel(PanelState.WELCOME)
 	
 	# Setup input fields - Login
-	login_username.placeholder_text = "Username or Email"
+	login_username.placeholder_text = "Email"
 	login_password.placeholder_text = "Password"
 	login_password.secret = true
 	
@@ -76,7 +90,7 @@ func _setup_ui() -> void:
 	signup_confirm_password.secret = true
 	
 	# Set max lengths
-	login_username.max_length = 50  # Allow for email addresses
+	login_username.max_length = 100  # Allow for email addresses
 	signup_username.max_length = MAX_USERNAME_LENGTH
 	signup_email.max_length = 100
 	
@@ -84,14 +98,303 @@ func _setup_ui() -> void:
 	login_status.text = ""
 	signup_status.text = ""
 	
+	_default_signup_button_text = signup_button.text
+	_default_confirm_placeholder = signup_confirm_password.placeholder_text
+	
 	# Optional: Add styling
 	_apply_theme()
+	_configure_api_settings()
 
 
 func _apply_theme() -> void:
 	"""Apply custom theme/styling"""
 	login_status.add_theme_color_override("font_color", Color.WHITE)
 	signup_status.add_theme_color_override("font_color", Color.WHITE)
+
+
+func _configure_api_settings() -> void:
+	_api_base_url = _determine_api_base_url()
+	_api_path_prefix = _determine_api_path_prefix()
+
+
+func _determine_api_base_url() -> String:
+	var env_url := OS.get_environment("FOURALL_API_BASE_URL")
+	if not env_url.is_empty():
+		return _sanitize_base_url(env_url)
+	
+	const PROJECT_SETTING := "application/config/4all_api_base_url"
+	if ProjectSettings.has_setting(PROJECT_SETTING):
+		var configured = ProjectSettings.get_setting(PROJECT_SETTING)
+		if typeof(configured) == TYPE_STRING and not String(configured).is_empty():
+			return _sanitize_base_url(String(configured))
+	
+	return DEFAULT_API_BASE_URL
+
+
+func _determine_api_path_prefix() -> String:
+	const PROJECT_SETTING := "application/config/4all_api_path"
+	if ProjectSettings.has_setting(PROJECT_SETTING):
+		var configured = ProjectSettings.get_setting(PROJECT_SETTING)
+		if typeof(configured) == TYPE_STRING and not String(configured).is_empty():
+			return _sanitize_path_prefix(String(configured))
+	
+	return DEFAULT_API_PATH
+
+
+func _sanitize_base_url(url: String) -> String:
+	var trimmed := url.strip_edges()
+	if trimmed.ends_with("/"):
+		trimmed = trimmed.substr(0, trimmed.length() - 1)
+	return trimmed
+
+
+func _sanitize_path_prefix(path: String) -> String:
+	var normalized := path.strip_edges()
+	if normalized.is_empty():
+		return ""
+	if not normalized.begins_with("/"):
+		normalized = "/" + normalized
+	if normalized.ends_with("/"):
+		normalized = normalized.substr(0, normalized.length() - 1)
+	return normalized
+
+
+# ===== API HELPERS =====
+
+func _build_api_url(path: String) -> String:
+	var base := _api_base_url
+	if path.begins_with("http://") or path.begins_with("https://"):
+		return path
+	
+	var relative := _trim_leading_slash(path)
+	if _api_path_prefix.is_empty():
+		return "%s/%s" % [base, relative]
+	else:
+		return "%s%s/%s" % [base, _api_path_prefix, relative]
+
+
+func _create_request_headers(extra_headers: Array = []) -> Array:
+	var headers: Array = ["Content-Type: application/json"]
+	headers.append_array(extra_headers)
+	return headers
+
+
+func _trim_leading_slash(path: String) -> String:
+	if path.begins_with("/"):
+		return path.substr(1, path.length() - 1)
+	return path
+
+
+func _send_api_request(method: int, path: String, payload: Dictionary = {}, extra_headers: Array = []) -> Dictionary:
+	var request := HTTPRequest.new()
+	request.timeout = API_TIMEOUT_SECONDS
+	add_child(request)
+	
+	var body := ""
+	if not payload.is_empty():
+		body = JSON.stringify(payload)
+	
+	var err := request.request(_build_api_url(path), _create_request_headers(extra_headers), method, body)
+	if err != OK:
+		request.queue_free()
+		return {
+			"ok": false,
+			"error": "Failed to start request",
+			"code": err
+		}
+	
+	var result: Array = await request.request_completed
+	request.queue_free()
+	
+	var request_result: int = result[0]
+	var status_code: int = result[1]
+	var body_bytes: PackedByteArray = result[3]
+	
+	if request_result != HTTPRequest.RESULT_SUCCESS:
+		return {
+			"ok": false,
+			"error": "Network error",
+			"result": request_result,
+			"status_code": status_code
+		}
+	
+	var body_text := ""
+	if body_bytes:
+		body_text = body_bytes.get_string_from_utf8()
+	
+	var json := JSON.new()
+	var parse_err := json.parse(body_text)
+	var data := {}
+	if parse_err == OK and typeof(json.data) == TYPE_DICTIONARY:
+		data = json.data
+	
+	var success: bool = (
+		status_code >= 200
+		and status_code < 300
+		and typeof(data) == TYPE_DICTIONARY
+		and bool(data.get("success", false))
+	)
+	
+	return {
+		"ok": success,
+		"status_code": status_code,
+		"data": data,
+		"raw_body": body_text
+	}
+
+
+func _extract_payload(response_data: Dictionary) -> Dictionary:
+	var current := response_data
+	var depth := 0
+	while typeof(current) == TYPE_DICTIONARY and current.has("data") and depth < 4:
+		var next_layer = current.get("data")
+		if typeof(next_layer) == TYPE_DICTIONARY:
+			current = next_layer
+			depth += 1
+		else:
+			break
+	return current
+
+
+func _get_error_message(response: Dictionary, default_message: String) -> String:
+	if response.has("error"):
+		return str(response["error"])
+	
+	if response.has("data") and typeof(response["data"]) == TYPE_DICTIONARY:
+		var data: Dictionary = response["data"]
+		if data.has("error"):
+			return str(data["error"])
+		if data.has("message"):
+			return str(data["message"])
+		
+		var payload := _extract_payload(data)
+		if payload.has("error"):
+			return str(payload["error"])
+		if payload.has("message"):
+			return str(payload["message"])
+	
+	if response.has("raw_body") and str(response["raw_body"]).length() > 0:
+		return str(response["raw_body"])
+	
+	if response.has("status_code"):
+		return "%s (HTTP %d)" % [default_message, int(response["status_code"])]
+	
+	return default_message
+
+
+func _api_login(email: String, password: String) -> Dictionary:
+	var response := await _send_api_request(HTTPClient.METHOD_POST, "auth/login", {
+		"email": email,
+		"password": password
+	})
+	
+	if response.get("ok", false) and response.has("data"):
+		response["payload"] = _extract_payload(response["data"])
+	
+	return response
+
+
+func _api_request_otp(email: String, password: String) -> Dictionary:
+	var response := await _send_api_request(HTTPClient.METHOD_POST, "auth/request-otp", {
+		"email": email,
+		"password": password
+	})
+	
+	if response.get("ok", false) and response.has("data"):
+		response["payload"] = _extract_payload(response["data"])
+	
+	return response
+
+
+func _api_verify_otp(email: String, otp: String) -> Dictionary:
+	var response := await _send_api_request(HTTPClient.METHOD_POST, "auth/verify-otp", {
+		"email": email,
+		"otp": otp
+	})
+	
+	if response.get("ok", false) and response.has("data"):
+		response["payload"] = _extract_payload(response["data"])
+	
+	return response
+
+
+func _update_bridge_token(token: String) -> Dictionary:
+	var trimmed := token.strip_edges()
+	if trimmed.is_empty():
+		return {"ok": false, "error": "Token cannot be empty."}
+	return await _send_api_request(HTTPClient.METHOD_POST, "config/user-token", {
+		"token": trimmed
+	})
+
+
+func _init_bridge_game(stream_url: String = "") -> Dictionary:
+	var payload := {}
+	var trimmed := stream_url.strip_edges()
+	if not trimmed.is_empty():
+		payload["streamUrl"] = trimmed
+	return await _send_api_request(HTTPClient.METHOD_POST, "games", payload)
+
+
+func _sync_bridge_session(access_token: String) -> void:
+	var trimmed := access_token.strip_edges()
+	if trimmed.is_empty():
+		return
+	
+	print("🔄 Syncing bridge session with new access token...")
+	var update_response := await _update_bridge_token(trimmed)
+	if not update_response.get("ok", false):
+		var error_message := _get_error_message(update_response, "Failed to update bridge token.")
+		push_warning("Bridge token update failed: %s" % error_message)
+		return
+	
+	print("✅ Bridge token updated. Initializing arena game...")
+	var init_response := await _init_bridge_game()
+	if not init_response.get("ok", false):
+		var init_error := _get_error_message(init_response, "Failed to initialize arena game.")
+		push_warning("Arena initialization failed: %s" % init_error)
+	else:
+		print("🎮 Arena game initialized via bridge API.")
+
+
+func _process_login_payload(email: String, payload: Dictionary, raw_response: Dictionary = {}, display_name_override: String = "", extra_session_fields: Dictionary = {}) -> Dictionary:
+	var user_info: Dictionary = {}
+	if payload.has("user") and typeof(payload["user"]) == TYPE_DICTIONARY:
+		user_info = payload["user"]
+	
+	var access_token: String = str(payload.get("accessToken", ""))
+	var refresh_token: String = str(payload.get("refreshToken", ""))
+	
+	var display_name: String = display_name_override
+	if display_name.is_empty():
+		if user_info.has("username") and typeof(user_info["username"]) == TYPE_STRING:
+			display_name = user_info["username"]
+		elif user_info.has("email") and typeof(user_info["email"]) == TYPE_STRING:
+			display_name = user_info["email"]
+		else:
+			display_name = email
+	
+	var extra_data: Dictionary = {
+		"access_token": access_token,
+		"refresh_token": refresh_token,
+		"profile": user_info,
+		"auth_payload": payload,
+		"display_name": display_name
+	}
+	
+	if not raw_response.is_empty():
+		extra_data["raw_response"] = raw_response
+	
+	for key in extra_session_fields.keys():
+		extra_data[key] = extra_session_fields[key]
+	
+	var saved := _save_user_session(display_name, "vorld", email, extra_data)
+	
+	return {
+		"saved": saved,
+		"display_name": display_name,
+		"access_token": access_token,
+		"profile": user_info
+	}
 
 
 func _connect_signals() -> void:
@@ -170,6 +473,8 @@ func _show_panel(panel: PanelState) -> void:
 			_clear_inputs(PanelState.LOGIN)
 		
 		PanelState.SIGNUP:
+			if _signup_state != SignupState.FORM:
+				_reset_signup_flow()
 			signup_panel.visible = true
 			signup_username.grab_focus()
 			_clear_inputs(PanelState.SIGNUP)
@@ -184,6 +489,8 @@ func _on_show_signup_pressed() -> void:
 
 
 func _on_back_to_welcome_pressed() -> void:
+	if _signup_state == SignupState.OTP_PENDING:
+		_reset_signup_flow()
 	_show_panel(PanelState.WELCOME)
 
 
@@ -196,12 +503,17 @@ func _on_login_enter_pressed(_text: String = "") -> void:
 
 func _on_login_pressed() -> void:
 	"""Handle login button press"""
-	var username_or_email = login_username.text.strip_edges()
+	var email = login_username.text.strip_edges()
 	var password = login_password.text
 	
 	# Validate inputs
-	if username_or_email.is_empty():
-		_show_status("Please enter your username or email.", true, PanelState.LOGIN)
+	if email.is_empty():
+		_show_status("Please enter your email address.", true, PanelState.LOGIN)
+		return
+	
+	var email_error = _validate_email(email)
+	if email_error != "":
+		_show_status(email_error, true, PanelState.LOGIN)
 		return
 	
 	if password.is_empty():
@@ -209,8 +521,8 @@ func _on_login_pressed() -> void:
 		return
 	
 	# Check rate limiting
-	if not _check_rate_limit(username_or_email):
-		var time_remaining = _get_lockout_time_remaining(username_or_email)
+	if not _check_rate_limit(email):
+		var time_remaining = _get_lockout_time_remaining(email)
 		_show_status("Too many failed attempts. Try again in %d minutes." % ceil(time_remaining / 60.0), true, PanelState.LOGIN)
 		return
 	
@@ -218,25 +530,23 @@ func _on_login_pressed() -> void:
 	_set_buttons_enabled(false, PanelState.LOGIN)
 	_show_status("Logging in...", false, PanelState.LOGIN)
 	
-	# Simulate network delay
-	await get_tree().create_timer(0.5).timeout
+	var response = await _api_login(email, password)
 	
-	# Try to verify user (supports both username and email)
-	var user_data = _verify_user_login(username_or_email, password)
-	
-	if not user_data.is_empty():
-		# Clear failed attempts on successful login
-		_clear_login_attempts(username_or_email)
+	if response.get("ok", false):
+		_clear_login_attempts(email)
 		
-		var username = user_data.get("username", username_or_email)
-		_show_status("Login successful!", false, PanelState.LOGIN)
+		var payload: Dictionary = response.get("payload", {})
+		var login_result: Dictionary = _process_login_payload(email, payload, response.get("data", {}))
 		
-		# Save session
-		if _save_user_session(username, "username", user_data.get("email", "")):
+		if login_result.get("saved", false):
+			_show_status("Login successful!", false, PanelState.LOGIN)
+			await _sync_bridge_session(login_result.get("access_token", ""))
 			login_successful.emit({
-				"user_id": username,
-				"login_type": "username",
-				"email": user_data.get("email", "")
+				"user_id": login_result.get("display_name", email),
+				"login_type": "vorld",
+				"email": email,
+				"access_token": login_result.get("access_token", ""),
+				"profile": login_result.get("profile", {})
 			})
 			await get_tree().create_timer(0.5).timeout
 			_go_to_main_menu()
@@ -244,15 +554,17 @@ func _on_login_pressed() -> void:
 			_show_status("Failed to save session.", true, PanelState.LOGIN)
 			_set_buttons_enabled(true, PanelState.LOGIN)
 	else:
-		# Record failed attempt
-		_record_failed_attempt(username_or_email)
+		_record_failed_attempt(email)
 		
-		var attempts_left = MAX_LOGIN_ATTEMPTS - _get_attempt_count(username_or_email)
+		var message := _get_error_message(response, "Login failed.")
+		
+		var attempts_left = MAX_LOGIN_ATTEMPTS - _get_attempt_count(email)
 		if attempts_left > 0:
-			_show_status("Invalid username/email or password. %d attempts remaining." % attempts_left, true, PanelState.LOGIN)
+			message = "%s %d attempts remaining." % [message, attempts_left]
 		else:
-			_show_status("Account locked. Too many failed attempts.", true, PanelState.LOGIN)
+			message = "%s Account locked. Too many failed attempts." % message
 		
+		_show_status(message, true, PanelState.LOGIN)
 		_set_buttons_enabled(true, PanelState.LOGIN)
 
 
@@ -265,70 +577,174 @@ func _on_signup_enter_pressed(_text: String = "") -> void:
 
 func _on_signup_pressed() -> void:
 	"""Handle signup button press"""
+	match _signup_state:
+		SignupState.FORM:
+			await _submit_signup_form()
+		SignupState.OTP_PENDING:
+			await _submit_signup_otp()
+
+
+func _submit_signup_form() -> void:
 	var username = signup_username.text.strip_edges()
 	var email = signup_email.text.strip_edges()
 	var password = signup_password.text
 	var confirm_password = signup_confirm_password.text
 	
-	# Validate username
 	var validation_error = _validate_username(username)
 	if validation_error != "":
 		_show_status(validation_error, true, PanelState.SIGNUP)
 		return
 	
-	# Validate email
 	validation_error = _validate_email(email)
 	if validation_error != "":
 		_show_status(validation_error, true, PanelState.SIGNUP)
 		return
 	
-	# Validate password
 	validation_error = _validate_password(password)
 	if validation_error != "":
 		_show_status(validation_error, true, PanelState.SIGNUP)
 		return
 	
-	# Check password match
 	if password != confirm_password:
 		_show_status("Passwords do not match.", true, PanelState.SIGNUP)
 		return
 	
-	# Check if username exists
-	if _user_exists(username):
-		_show_status("Username already taken.", true, PanelState.SIGNUP)
-		return
-	
-	# Check if email exists
-	if _email_exists(email):
-		_show_status("Email already registered.", true, PanelState.SIGNUP)
-		return
-	
-	# Disable inputs during signup
 	_set_buttons_enabled(false, PanelState.SIGNUP)
-	_show_status("Creating account...", false, PanelState.SIGNUP)
+	_show_status("Requesting verification code...", false, PanelState.SIGNUP)
 	
-	# Simulate network delay
-	await get_tree().create_timer(0.5).timeout
+	var response = await _api_request_otp(email, password)
 	
-	# Create account
-	if _create_user(username, email, password):
-		_show_status("Account created successfully!", false, PanelState.SIGNUP)
-		
-		# Save session and login
-		if _save_user_session(username, "username", email):
-			signup_successful.emit({
-				"user_id": username,
-				"login_type": "username",
-				"email": email
-			})
-			await get_tree().create_timer(0.8).timeout
-			_go_to_main_menu()
-		else:
-			_show_status("Account created but failed to login.", true, PanelState.SIGNUP)
-			_set_buttons_enabled(true, PanelState.SIGNUP)
-	else:
-		_show_status("Failed to create account.", true, PanelState.SIGNUP)
+	if not response.get("ok", false):
+		var error_message = _get_error_message(response, "Failed to request OTP.")
+		_show_status(error_message, true, PanelState.SIGNUP)
 		_set_buttons_enabled(true, PanelState.SIGNUP)
+		return
+	
+	var payload: Dictionary = response.get("payload", {})
+	var requires_otp: bool = bool(payload.get("requiresOTP", true))
+	var extra_fields: Dictionary = {"preferred_username": username}
+	
+	if not requires_otp and payload.has("accessToken"):
+		_show_status("Account ready! Logging you in...", false, PanelState.SIGNUP)
+		var login_response = await _api_login(email, password)
+		
+		if login_response.get("ok", false):
+			var login_result: Dictionary = _process_login_payload(email, login_response.get("payload", {}), login_response.get("data", {}), "", extra_fields)
+			if login_result.get("saved", false):
+				await _sync_bridge_session(login_result.get("access_token", ""))
+				signup_successful.emit({
+					"user_id": login_result.get("display_name", email),
+					"login_type": "vorld",
+					"email": email,
+					"access_token": login_result.get("access_token", ""),
+					"profile": login_result.get("profile", {})
+				})
+				await get_tree().create_timer(0.5).timeout
+				_reset_signup_flow()
+				_go_to_main_menu()
+			else:
+				_show_status("Account created but failed to save session.", true, PanelState.SIGNUP)
+				_set_buttons_enabled(true, PanelState.SIGNUP)
+		else:
+			var login_error = _get_error_message(login_response, "Login failed.")
+			_show_status(login_error, true, PanelState.SIGNUP)
+			_set_buttons_enabled(true, PanelState.SIGNUP)
+		return
+	
+	_pending_signup_email = email
+	_pending_signup_password = password
+	_pending_signup_username = username
+	_signup_state = SignupState.OTP_PENDING
+	
+	signup_button.text = "Verify OTP"
+	signup_password.editable = false
+	signup_username.editable = false
+	signup_email.editable = false
+	signup_confirm_password.editable = true
+	signup_confirm_password.text = ""
+	signup_confirm_password.placeholder_text = "Enter 6-digit OTP"
+	signup_confirm_password.secret = false
+	
+	_show_status("OTP sent to %s. Enter the code and press Verify." % email, false, PanelState.SIGNUP)
+	_set_buttons_enabled(true, PanelState.SIGNUP)
+
+
+func _submit_signup_otp() -> void:
+	var otp = signup_confirm_password.text.strip_edges()
+	
+	if otp.is_empty():
+		_show_status("Please enter the 6-digit OTP sent to your email.", true, PanelState.SIGNUP)
+		return
+	
+	if otp.length() != 6:
+		_show_status("OTP should be a 6-digit code.", true, PanelState.SIGNUP)
+		return
+	
+	_set_buttons_enabled(false, PanelState.SIGNUP)
+	_show_status("Verifying OTP...", false, PanelState.SIGNUP)
+	
+	var response = await _api_verify_otp(_pending_signup_email, otp)
+	
+	if not response.get("ok", false):
+		var error_message = _get_error_message(response, "Failed to verify OTP.")
+		_show_status(error_message, true, PanelState.SIGNUP)
+		_set_buttons_enabled(true, PanelState.SIGNUP)
+		return
+	
+	_show_status("OTP verified! Logging you in...", false, PanelState.SIGNUP)
+	
+	var login_response = await _api_login(_pending_signup_email, _pending_signup_password)
+	
+	if not login_response.get("ok", false):
+		var login_error = _get_error_message(login_response, "Login failed after verification.")
+		_show_status(login_error, true, PanelState.SIGNUP)
+		_set_buttons_enabled(true, PanelState.SIGNUP)
+		return
+	
+	var extra_fields: Dictionary = {}
+	if not _pending_signup_username.is_empty():
+		extra_fields["preferred_username"] = _pending_signup_username
+	
+	var login_result := _process_login_payload(_pending_signup_email, login_response.get("payload", {}), login_response.get("data", {}), _pending_signup_username, extra_fields)
+	
+	if not login_result.get("saved", false):
+		_show_status("Account verified but failed to save session.", true, PanelState.SIGNUP)
+		_set_buttons_enabled(true, PanelState.SIGNUP)
+		return
+	
+	await _sync_bridge_session(login_result.get("access_token", ""))
+	
+	signup_successful.emit({
+		"user_id": login_result.get("display_name", _pending_signup_email),
+		"login_type": "vorld",
+		"email": _pending_signup_email,
+		"access_token": login_result.get("access_token", ""),
+		"profile": login_result.get("profile", {})
+	})
+	
+	await get_tree().create_timer(0.5).timeout
+	_reset_signup_flow()
+	_go_to_main_menu()
+
+
+func _reset_signup_flow() -> void:
+	_signup_state = SignupState.FORM
+	_pending_signup_email = ""
+	_pending_signup_password = ""
+	_pending_signup_username = ""
+	
+	signup_button.text = _default_signup_button_text
+	signup_username.editable = true
+	signup_email.editable = true
+	signup_password.editable = true
+	signup_confirm_password.editable = true
+	signup_confirm_password.placeholder_text = _default_confirm_placeholder
+	signup_confirm_password.secret = true
+	signup_password.text = ""
+	signup_confirm_password.text = ""
+	
+	_set_buttons_enabled(true, PanelState.SIGNUP)
+	_show_status("", false, PanelState.SIGNUP)
 
 
 # ===== GUEST LOGIN =====
@@ -634,7 +1050,7 @@ func _verify_user_login(username_or_email: String, password: String) -> Dictiona
 
 # ===== SESSION MANAGEMENT =====
 
-func _save_user_session(user_id: String, login_type: String, email: String) -> bool:
+func _save_user_session(user_id: String, login_type: String, email: String, extra_data: Dictionary = {}) -> bool:
 	"""Save user session"""
 	var session_data = {
 		"user_id": user_id,
@@ -643,6 +1059,9 @@ func _save_user_session(user_id: String, login_type: String, email: String) -> b
 		"logged_in": true,
 		"timestamp": Time.get_unix_time_from_system()
 	}
+	
+	for key in extra_data.keys():
+		session_data[key] = extra_data[key]
 	
 	var file = FileAccess.open(SESSION_FILE, FileAccess.WRITE)
 	if file == null:
@@ -694,9 +1113,10 @@ func _set_buttons_enabled(enabled: bool, panel: PanelState) -> void:
 		PanelState.SIGNUP:
 			signup_button.disabled = not enabled
 			back_from_signup.disabled = not enabled
-			signup_username.editable = enabled
-			signup_email.editable = enabled
-			signup_password.editable = enabled
+			var allow_form_edit := enabled and _signup_state == SignupState.FORM
+			signup_username.editable = allow_form_edit
+			signup_email.editable = allow_form_edit
+			signup_password.editable = allow_form_edit
 			signup_confirm_password.editable = enabled
 
 
