@@ -20,7 +20,7 @@ extends CharacterBody2D
 
 
 # Health System
-const MAX_HEALTH = 20
+const MAX_HEALTH = 4
 var current_health = MAX_HEALTH
 var is_invincible = false
 const INVINCIBILITY_TIME = 1.0  # Seconds of invincibility after getting hurt
@@ -45,6 +45,8 @@ var powerup_timer: Timer
 var has_powerup = false 
 
 
+# Gems Collect
+var gems: int = 0
 
 const SHOOT_COOLDOWN = 0.15
 const BULLETS_PER_SHOT = 1
@@ -347,52 +349,61 @@ func check_stomp_collisions(velocity_y_before: float):
 
 
 func _on_stomp_area_body_entered(body):
+	"""Handle stomp area collision"""
 	# Only process if it's an enemy and the player is moving downward
 	if not body:
 		return
+	
 	if (body.is_in_group("enemy") or body.is_in_group("enemies")) and velocity.y > 0:
 		# Prevent double stomping by checking a flag
 		if "being_stomped" in body and body.being_stomped:
 			return
+		
 		# Mark so enemies don't hurt player this frame
 		if body.has_method("set"):
 			body.set("being_stomped", true)
 		else:
 			body.being_stomped = true
+		
+		# ✅ Stomp the enemy (it handles kill counting internally)
 		stomp_enemy(body)
 
 
-
 func stomp_enemy(enemy):
+	"""
+	✅ FIXED: Stomp an enemy
+	The enemy's die() function will handle kill counting when from_player=true
+	"""
 	print("Stomping enemy: ", enemy.name)
 	
 	# Play stomp sound
 	if stomp:
 		stomp.play()
 	
-	# Register stomp with ComboManager
-	if ComboManagr:
-		ComboManagr.register_stomp()
-	else:
-		print("ComboManager not found")
-
-	# Notify GameManager for XP/score gain
+	# ✅ Register stomp with GameManager (for stomp streak tracking)
 	if GameManager:
-		GameManager.register_kill()
+		GameManager.register_stomp()
+		enemy.die(true)
 	else:
 		print("GameManager not found")
-
-	# Call on_stomped method if it exists (for custom behavior)
-	if enemy.has_method("on_stomped"):
-		enemy.on_stomped()
-
-	# Kill enemy safely
-	if enemy.has_method("die"):
-		enemy.die()
+	
+	# ✅ Kill enemy with from_player=true
+	# The enemy's die() function will call GameManager.register_kill()
+	if enemy.has_method("take_stomp_damage"):
+		# Use dedicated stomp damage method (instant kill, always player kill)
+		enemy.take_stomp_damage(999.0)
+	elif enemy.has_method("take_damage"):
+		# Fallback: use regular damage with from_player=true
+		enemy.take_damage(999.0, Vector2.DOWN, 0.0, true)
+	elif enemy.has_method("die"):
+		# Last resort: directly call die with from_player=true
+		enemy.die(true)
 	elif enemy.has_method("kill"):
-		enemy.kill()
+		enemy.kill()  # This calls die(true) in the enemy script
 	else:
+		# No proper death method, just remove it (won't count as kill)
 		enemy.queue_free()
+		push_warning("Enemy has no proper death method - kill not counted")
 	
 	# Reload ammo (capped)
 	current_ammo = min(current_ammo + STOMP_AMMO_REWARD, max_ammo)
@@ -405,7 +416,6 @@ func stomp_enemy(enemy):
 	# Feedback signal
 	emit_signal("enemy_stomped")
 	print("Enemy stomped! Ammo:", current_ammo)
-
 
 
 #endregion
@@ -798,6 +808,11 @@ func get_powerup_time_remaining() -> float:
 		return weapon_manager.get_powerup_time_remaining()
 	return 0.0
 
+
+func collect_gem(value: int = 1) -> void:
+	gems += value
+	gems_changed.emit(gems)
+	print("Gem collected! Total gems: ", gems)
 
 func handle_flip_h():
 	player_animation.flip_h = facing < 0

@@ -38,7 +38,7 @@ signal combo_tier_reached(tier: int)
 signal combo_decaying(is_decay: bool)
 signal combo_broken
 signal combo_milestone_reached(milestone: int)  # For special milestones
-
+signal gems_collected_chnaged(total_gems: int)
 # Gem collection tracking
 var gem_chain: int = 0  # Gems collected in quick succession
 var gem_chain_timer: float = 0.0
@@ -49,7 +49,7 @@ const GEM_CHAIN_COMBO_THRESHOLD: int = 5  # Gems needed for bonus combo
 var total_kills: int = 0
 var total_stomps: int = 0
 var total_shot_kills: int = 0
-
+var total_gems_collcted: int = 0
 
 func _ready() -> void:
 	add_to_group("combo_manager")
@@ -78,6 +78,8 @@ func _process(delta: float) -> void:
 
 
 # === Combo Management ===
+
+
 
 func add_combo(amount: int = 1) -> void:
 	"""Add to combo (from kills, stomps, etc)"""
@@ -245,6 +247,11 @@ func register_shot_kill() -> void:
 
 func collect_gem(value: int = 1) -> void:
 	"""Called when player collects a gem"""
+	
+	# Track total gems
+	total_gems_collcted += value
+	gems_collected_chnaged.emit(total_gems_collcted)
+	
 	# Gem collection refreshes combo timer (prevents decay)
 	refresh_combo()
 	
@@ -258,6 +265,10 @@ func collect_gem(value: int = 1) -> void:
 		add_combo(bonus_combos)
 		gem_chain = gem_chain % GEM_CHAIN_COMBO_THRESHOLD  # Keep remainder
 		print("💎 Gem chain bonus! +" + str(bonus_combos) + " combo")
+
+
+func get_total_gems() -> int:
+	return total_gems_collcted
 
 
 func _reset_gem_chain() -> void:
@@ -373,6 +384,8 @@ func reset_stats() -> void:
 	total_kills = 0
 	total_stomps = 0
 	total_shot_kills = 0
+	total_gems_collcted = 0
+	gems_collected_chnaged.emit(0)
 	print("ComboManager stats reset")
 
 

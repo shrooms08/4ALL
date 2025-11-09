@@ -14,8 +14,8 @@ class_name BaseEnemy
 @export var attack_cooldown: float = 1.0
 
 @export_group("Optimization")
-@export var ai_update_rate: float = 0.2  # Update AI every 0.2s instead of every frame
-@export var max_active_distance: float = 2000.0  # Disable AI when this far (increased for visibility)
+@export var ai_update_rate: float = 0.2
+@export var max_active_distance: float = 2000.0
 
 @export_group("Drops")
 @export var exp_value: int = 10
@@ -25,6 +25,7 @@ class_name BaseEnemy
 
 # Signals
 signal died(enemy: BaseEnemy)
+signal player_kill(enemy: BaseEnemy)  # NEW: Specific signal for player kills
 signal damaged(amount: float, current_health: float)
 signal attack_performed()
 
@@ -36,6 +37,7 @@ var can_attack: bool = true
 var attack_timer: float = 0.0
 var being_stomped: bool = false
 var frozen: bool = false
+var killed_by_player: bool = false  # NEW: Track if player got the kill
 
 # ⚡ OPTIMIZATION: Cache player reference and update periodically
 static var cached_player: Node2D = null
@@ -78,9 +80,9 @@ func _physics_process(delta):
 	if not is_ai_active:
 		return
 	
-	# ⚡ Early exit if player is far above (cleanup)
+	# ⚡ Early exit if player is far above (cleanup) - NOT A PLAYER KILL
 	if player and global_position.y < player.global_position.y - 1500:
-		queue_free()
+		die(false)  # Pass false - not killed by player
 		return
 	
 	# Handle attack cooldown
@@ -199,12 +201,15 @@ func attack():
 	# Override in inherited classes
 	pass
 
-func take_damage(amount: float, knockback_direction: Vector2 = Vector2.ZERO, knockback_force: float = 300.0):
+# ✅ FIXED: Now tracks WHO caused the damage
+func take_damage(amount: float, knockback_direction: Vector2 = Vector2.ZERO, knockback_force: float = 300.0, from_player: bool = true):
 	if is_dead:
 		return
 	
 	current_health -= amount
 	current_health = max(0, current_health)
+	
+	GameManager.register_hit()
 	
 	# Apply knockback
 	if knockback_direction != Vector2.ZERO:
@@ -218,7 +223,7 @@ func take_damage(amount: float, knockback_direction: Vector2 = Vector2.ZERO, kno
 	damaged.emit(amount, current_health)
 	
 	if current_health <= 0:
-		die()
+		die(from_player)  # Pass along who killed it
 
 func damage_feedback():
 	# ⚡ OPTIMIZATION: Use modulate tween instead of timer
@@ -230,31 +235,41 @@ func damage_feedback():
 func heal(amount: float):
 	current_health = min(current_health + amount, max_health)
 
-func die():
+# ✅ FIXED: Only count kills when player actually killed the enemy
+func die(from_player: bool = false):
 	if is_dead:
 		return
 	
 	is_dead = true
+	killed_by_player = from_player
 	set_physics_process(false)
 	
-	# Register kill
-	ComboManagr.register_kill()
-	GameManager.enemies_killed += 1
-	
-	var base_score = exp_value
-	var final_score = ComboManagr.calculate_score(base_score)
-	GameManager.add_score(final_score)
-	
-	# Debug print
-	print("Score:", GameManager.score, " | Enemies killed:", GameManager.enemies_killed)
+	# ✅ ONLY count as kill if player did it
+	if from_player:
+		ComboManagr.register_kill()
+		GameManager.register_kill(exp_value)
+		
+		var base_score = exp_value
+		var final_score = ComboManagr.calculate_score(base_score)
+		GameManager.add_score(final_score)
+		
+		# Debug print - only for player kills
+		print("PLAYER KILL - Score:", GameManager.score, " | Enemies killed:", GameManager.enemies_killed)
+		
+		# Emit player kill signal
+		player_kill.emit(self)
+	else:
+		# Debug print for non-player deaths
+		print("Enemy died (not player kill) - despawned/fell/etc")
 	
 	# Disable collision
 	if collision_shape_2d:
 		collision_shape_2d.set_deferred("disabled", true)
 	
-	# Spawn effects immediately
-	death_effects()
-	spawn_gems()
+	# Spawn effects and gems ONLY if killed by player
+	if from_player:
+		death_effects()
+		spawn_gems()
 	
 	died.emit(self)
 	
@@ -288,5 +303,11 @@ func is_alive() -> bool:
 func get_health_percentage() -> float:
 	return current_health / max_health if max_health > 0 else 0.0
 
+# ✅ FIXED: Kill function now assumes player kill
 func kill():
-	die()
+	die(true)  # Assume manual kill() calls are from player
+
+# NEW: Stomp damage function (call this from your stomp mechanic)
+func take_stomp_damage(stomp_damage: float = 999.0):
+	"""Special function for stomp kills - always counts as player kill"""
+	take_damage(stomp_damage, Vector2.DOWN, 0.0, true)

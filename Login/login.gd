@@ -38,6 +38,8 @@ const MIN_PASSWORD_LENGTH = 6
 const SESSION_FILE = "user://session.save"
 const USERS_FILE = "user://users.save"
 const MAIN_MENU_SCENE = "res://PlayScene/play_scene.tscn"
+const MAX_LOGIN_ATTEMPTS = 5
+const LOCKOUT_TIME = 300  # 5 minutes in seconds
 
 # ===== SIGNALS =====
 signal login_successful(user_data: Dictionary)
@@ -46,6 +48,7 @@ signal signup_successful(user_data: Dictionary)
 # ===== STATE =====
 enum PanelState { WELCOME, LOGIN, SIGNUP }
 var current_panel: PanelState = PanelState.WELCOME
+var _login_attempts: Dictionary = {}  # Track failed login attempts
 
 
 func _ready() -> void:
@@ -205,6 +208,12 @@ func _on_login_pressed() -> void:
 		_show_status("Please enter your password.", true, PanelState.LOGIN)
 		return
 	
+	# Check rate limiting
+	if not _check_rate_limit(username_or_email):
+		var time_remaining = _get_lockout_time_remaining(username_or_email)
+		_show_status("Too many failed attempts. Try again in %d minutes." % ceil(time_remaining / 60.0), true, PanelState.LOGIN)
+		return
+	
 	# Disable inputs during login
 	_set_buttons_enabled(false, PanelState.LOGIN)
 	_show_status("Logging in...", false, PanelState.LOGIN)
@@ -215,7 +224,10 @@ func _on_login_pressed() -> void:
 	# Try to verify user (supports both username and email)
 	var user_data = _verify_user_login(username_or_email, password)
 	
-	if user_data != null:
+	if not user_data.is_empty():
+		# Clear failed attempts on successful login
+		_clear_login_attempts(username_or_email)
+		
 		var username = user_data.get("username", username_or_email)
 		_show_status("Login successful!", false, PanelState.LOGIN)
 		
@@ -232,7 +244,15 @@ func _on_login_pressed() -> void:
 			_show_status("Failed to save session.", true, PanelState.LOGIN)
 			_set_buttons_enabled(true, PanelState.LOGIN)
 	else:
-		_show_status("Invalid username/email or password.", true, PanelState.LOGIN)
+		# Record failed attempt
+		_record_failed_attempt(username_or_email)
+		
+		var attempts_left = MAX_LOGIN_ATTEMPTS - _get_attempt_count(username_or_email)
+		if attempts_left > 0:
+			_show_status("Invalid username/email or password. %d attempts remaining." % attempts_left, true, PanelState.LOGIN)
+		else:
+			_show_status("Account locked. Too many failed attempts.", true, PanelState.LOGIN)
+		
 		_set_buttons_enabled(true, PanelState.LOGIN)
 
 
@@ -364,6 +384,100 @@ func _connect_wallet() -> String:
 		return ""
 
 
+# ===== RATE LIMITING =====
+
+func _check_rate_limit(identifier: String) -> bool:
+	"""Check if user is rate limited"""
+	var identifier_lower = identifier.to_lower()
+	
+	if not _login_attempts.has(identifier_lower):
+		return true
+	
+	var attempts = _login_attempts[identifier_lower]
+	if attempts.count >= MAX_LOGIN_ATTEMPTS:
+		var time_passed = Time.get_unix_time_from_system() - attempts.first_attempt
+		if time_passed < LOCKOUT_TIME:
+			return false
+		else:
+			# Lockout period expired, clear attempts
+			_login_attempts.erase(identifier_lower)
+	
+	return true
+
+
+func _record_failed_attempt(identifier: String) -> void:
+	"""Record a failed login attempt"""
+	var identifier_lower = identifier.to_lower()
+	var current_time = Time.get_unix_time_from_system()
+	
+	if not _login_attempts.has(identifier_lower):
+		_login_attempts[identifier_lower] = {
+			"count": 1,
+			"first_attempt": current_time,
+			"last_attempt": current_time
+		}
+	else:
+		var attempts = _login_attempts[identifier_lower]
+		
+		# Reset if lockout period has passed
+		if current_time - attempts.first_attempt >= LOCKOUT_TIME:
+			_login_attempts[identifier_lower] = {
+				"count": 1,
+				"first_attempt": current_time,
+				"last_attempt": current_time
+			}
+		else:
+			attempts.count += 1
+			attempts.last_attempt = current_time
+
+
+func _clear_login_attempts(identifier: String) -> void:
+	"""Clear failed login attempts on successful login"""
+	var identifier_lower = identifier.to_lower()
+	if _login_attempts.has(identifier_lower):
+		_login_attempts.erase(identifier_lower)
+
+
+func _get_attempt_count(identifier: String) -> int:
+	"""Get number of failed attempts for identifier"""
+	var identifier_lower = identifier.to_lower()
+	if _login_attempts.has(identifier_lower):
+		return _login_attempts[identifier_lower].count
+	return 0
+
+
+func _get_lockout_time_remaining(identifier: String) -> float:
+	"""Get remaining lockout time in seconds"""
+	var identifier_lower = identifier.to_lower()
+	if not _login_attempts.has(identifier_lower):
+		return 0.0
+	
+	var attempts = _login_attempts[identifier_lower]
+	var time_passed = Time.get_unix_time_from_system() - attempts.first_attempt
+	return max(0.0, LOCKOUT_TIME - time_passed)
+
+
+# ===== PASSWORD HASHING =====
+
+func _generate_salt() -> String:
+	"""Generate a random salt for password hashing"""
+	var rng = RandomNumberGenerator.new()
+	rng.randomize()
+	var salt = ""
+	for i in range(16):
+		salt += String.chr(rng.randi_range(33, 126))
+	return salt.sha256_text()
+
+
+func _hash_password(password: String, salt: String) -> String:
+	"""Hash password with salt using SHA-256 (multiple rounds)"""
+	var hash = password + salt
+	# Apply SHA-256 multiple times for better security (1000 rounds)
+	for i in range(1000):
+		hash = hash.sha256_text()
+	return hash
+
+
 # ===== VALIDATION =====
 
 func _validate_username(username: String) -> String:
@@ -465,20 +579,22 @@ func _email_exists(email: String) -> bool:
 
 
 func _create_user(username: String, email: String, password: String) -> bool:
-	"""Create new user account"""
+	"""Create new user account with secure password storage"""
 	var users = _load_users_db()
 	var username_lower = username.to_lower()
 	
 	if users.has(username_lower):
 		return false
 	
-	# Hash password (simple for now - use proper hashing in production)
-	var password_hash = password.md5_text()
+	# Generate salt and hash password securely
+	var salt = _generate_salt()
+	var password_hash = _hash_password(password, salt)
 	
 	users[username_lower] = {
 		"username": username,  # Store original case
 		"email": email,
 		"password_hash": password_hash,
+		"salt": salt,  # Store salt with user data
 		"created_at": Time.get_unix_time_from_system(),
 		"email_verified": false  # For future email verification
 	}
@@ -487,25 +603,33 @@ func _create_user(username: String, email: String, password: String) -> bool:
 
 
 func _verify_user_login(username_or_email: String, password: String) -> Dictionary:
-	"""Verify user credentials - supports username or email"""
+	"""Verify user credentials with salted hash - supports username or email"""
 	var users = _load_users_db()
 	var input_lower = username_or_email.to_lower()
-	var password_hash = password.md5_text()
+	
+	var user_data: Dictionary
 	
 	# Try as username first
 	if users.has(input_lower):
-		var user_data = users[input_lower]
-		if user_data.get("password_hash", "") == password_hash:
+		user_data = users[input_lower]
+	else:
+		# Try as email
+		for user_key in users:
+			var current_user = users[user_key]
+			if current_user.get("email", "").to_lower() == input_lower:
+				user_data = current_user
+				break
+	
+	# Verify password if user found
+	if not user_data.is_empty():
+		var salt = user_data.get("salt", "")
+		var stored_hash = user_data.get("password_hash", "")
+		var input_hash = _hash_password(password, salt)
+		
+		if input_hash == stored_hash:
 			return user_data
 	
-	# Try as email
-	for user_key in users:
-		var user_data = users[user_key]
-		if user_data.get("email", "").to_lower() == input_lower:
-			if user_data.get("password_hash", "") == password_hash:
-				return user_data
-	
-	return {}
+	return {}  # Return empty dict on failure
 
 
 # ===== SESSION MANAGEMENT =====
@@ -628,5 +752,33 @@ func update_user_email(username: String, new_email: String) -> bool:
 	
 	users[username_lower]["email"] = new_email
 	users[username_lower]["email_verified"] = false
+	
+	return _save_users_db(users)
+
+
+func update_user_password(username: String, old_password: String, new_password: String) -> bool:
+	"""Update user's password"""
+	var users = _load_users_db()
+	var username_lower = username.to_lower()
+	
+	if not users.has(username_lower):
+		return false
+	
+	var user_data = users[username_lower]
+	
+	# Verify old password
+	var old_salt = user_data.get("salt", "")
+	var stored_hash = user_data.get("password_hash", "")
+	var old_hash = _hash_password(old_password, old_salt)
+	
+	if old_hash != stored_hash:
+		return false
+	
+	# Generate new salt and hash
+	var new_salt = _generate_salt()
+	var new_hash = _hash_password(new_password, new_salt)
+	
+	users[username_lower]["password_hash"] = new_hash
+	users[username_lower]["salt"] = new_salt
 	
 	return _save_users_db(users)

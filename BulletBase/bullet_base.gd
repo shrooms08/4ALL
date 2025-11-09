@@ -24,14 +24,12 @@ func _ready() -> void:
 	if is_instance_valid(self):
 		on_lifetime_expired()
 
-
 func setup(angle: float, bullet_damage: float = 10.0):
 	direction = Vector2(cos(angle), sin(angle)).normalized()
 	velocity = direction * get_bullet_speed()
 	rotation = angle
 	damage = bullet_damage
 	on_setup_complete()
-
 
 func on_bullet_ready() -> void:
 	pass
@@ -50,7 +48,6 @@ func get_max_distance() -> float:
 
 func update_bullet_physics(delta: float) -> void:
 	pass
-
 
 func _physics_process(delta: float) -> void:
 	if has_been_destroyed:
@@ -71,7 +68,6 @@ func _physics_process(delta: float) -> void:
 
 func on_max_distance_reached() -> void:
 	queue_free()
-
 
 func check_tiles_in_path(from: Vector2, to: Vector2):
 	var tilemap = get_tree().get_first_node_in_group("breakable_tiles")
@@ -96,10 +92,17 @@ func _on_body_entered(body: Node2D) -> void:
 		on_hit_tile(body)
 		return
 	
+	# ✅ FIXED: Pass from_player=true to enemy damage
 	if body.is_in_group("enemies") and body.has_method("take_damage"):
 		has_been_destroyed = true
 		var knockback_dir = direction
-		body.take_damage(damage, knockback_dir, knockback_force)
+		
+		# This is a player shot, so from_player=true
+		body.take_damage(damage, knockback_dir, knockback_force, true)
+		
+		# Track hit for accuracy (bullet connected)
+		GameManager.register_hit()
+		
 		on_hit_enemy(body)
 		return
 	
@@ -112,32 +115,33 @@ func _on_area_entered(area: Area2D) -> void:
 		return
 	
 	var parent = area.get_parent()
+	
+	# ✅ FIXED: Pass from_player=true to enemy damage
 	if parent and parent.is_in_group("enemies") and parent.has_method("take_damage"):
 		has_been_destroyed = true
 		var knockback_dir = direction
-		parent.take_damage(damage, knockback_dir, knockback_force)
+		
+		# This is a player shot, so from_player=true
+		parent.take_damage(damage, knockback_dir, knockback_force, true)
+		
+		# Track hit for accuracy (bullet connected)
+		GameManager.register_hit()
+		
 		on_hit_enemy(parent)
-
 
 func on_hit_tile(tile: Node2D) -> void:
 	queue_free()
 
 func on_hit_enemy(enemy: Node2D) -> void:
-	# Track shot accuracy
-	if Engine.has_singleton("GameManager"):
-		GameManager.register_hit()
+	"""
+	✅ FIXED: Don't register kill here!
+	The enemy's die() function will call GameManager.register_kill()
+	when health reaches 0 and from_player=true
 	
-	# Check if enemy died after taking damage
-	var enemy_died := false
-	if enemy.has_method("is_alive"):
-		enemy_died = not enemy.is_alive()
-	
-	# Register combo or XP if kill confirmed
-	if enemy_died:
-		if Engine.has_singleton("ComboManager"):
-			ComboManagr.register_shot_kill()
-		if Engine.has_singleton("GameManager"):
-			GameManager.register_kill()
+	We only track that the bullet HIT the enemy here.
+	"""
+	# Hit tracking is already done above in _on_body_entered/_on_area_entered
+	# No need to check if enemy died or register kill - enemy handles that!
 	
 	queue_free()
 

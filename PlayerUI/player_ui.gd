@@ -26,8 +26,7 @@ func _ready():
 			player.health_changed.connect(_on_health_changed)
 			player.player_died.connect(_on_player_died)
 			
-			if player.has_signal("gems_changed"):
-				player.gems_changed.connect(_on_gems_changed)
+			
 			if player.has_signal("ammo_changed"):
 				player.ammo_changed.connect(_on_ammo_changed)
 			
@@ -46,6 +45,14 @@ func _ready():
 			print("PlayerUI: ERROR - Could not find player at path: ", player_path)
 	else:
 		print("PlayerUI: ERROR - No player_path set!")
+	
+	# Connect to ComboManager for gem tracking
+	if ComboManagr:
+		ComboManagr.gems_collected_chnaged.connect(_on_gems_changed)
+		_on_gems_changed(ComboManagr.get_total_gems())
+	else:
+		print("PlayerUI: Error - ComboMananger not found!")
+		_on_gems_changed(0)
 	
 	timer_label.text = "0:00:00"
 	

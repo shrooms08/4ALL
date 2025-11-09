@@ -11,7 +11,7 @@ var level: int = 1
 var total_xp: int = 0
 var score: int = 0
 var high_score: int = 0
-var enemies_killed: int = 0
+var enemies_killed: int = 0  # ✅ Now only counts PLAYER kills
 var depth: int = 0
 var max_depth_reached: int = 0
 var gems_collected: int = 0
@@ -21,6 +21,7 @@ var shots_fired: int = 0
 var accuracy: float = 0.0
 var enemies_stomped: int = 0
 var perfect_stomp_streak: int = 0
+var hits_landed: int = 0  # ✅ NEW: Track successful hits for accuracy
 
 # ===== XP & LEVELING =====
 var xp_to_next_level: int = 100
@@ -245,8 +246,9 @@ func _grant_level_rewards() -> void:
 # ===== COMBAT & SCORING =====
 
 func register_kill(enemy_value: int = 100) -> void:
-	"""Register enemy kill with combo multiplier"""
+	"""✅ Register PLAYER kill with combo multiplier - only called for player kills"""
 	enemies_killed += 1
+	hits_landed += 1  # Count as successful hit
 	
 	# Calculate score with combo
 	var final_score = enemy_value
@@ -260,12 +262,17 @@ func register_kill(enemy_value: int = 100) -> void:
 	add_score(final_score)
 	add_xp(10)  # Base XP per kill
 	
+	# Update accuracy
+	_update_accuracy()
+	
 	enemy_killed.emit(enemies_killed)
 	stats_updated.emit()
+	
+	print("🎯 Player Kill #%d | Score: %d (+%d)" % [enemies_killed, score, final_score])
 
 
 func register_stomp() -> void:
-	"""Register stomp kill"""
+	"""✅ Register stomp kill - always a player kill"""
 	enemies_stomped += 1
 	perfect_stomp_streak += 1
 	
@@ -279,9 +286,11 @@ func register_stomp() -> void:
 	if perfect_stomp_streak > 1:
 		var bonus_xp = perfect_stomp_streak * 5
 		add_xp(bonus_xp)
+		print("🦶 Stomp Streak: %d (+%d XP)" % [perfect_stomp_streak, bonus_xp])
 	
 	if perfect_stomp_streak >= 5:
 		perfect_stomp_achieved.emit(perfect_stomp_streak)
+		print("⭐ PERFECT STOMP STREAK: %d!" % perfect_stomp_streak)
 	
 	stats_updated.emit()
 
@@ -289,25 +298,28 @@ func register_stomp() -> void:
 func reset_perfect_stomps() -> void:
 	"""Reset stomp streak"""
 	if perfect_stomp_streak > 0:
-		print("Stomp streak ended: %d" % perfect_stomp_streak)
+		print("💔 Stomp streak ended: %d" % perfect_stomp_streak)
 	perfect_stomp_streak = 0
 
 
 func register_shot() -> void:
-	"""Track shot fired"""
+	"""✅ Track shot fired (for accuracy calculation)"""
 	shots_fired += 1
 	_update_accuracy()
 
 
 func register_hit() -> void:
-	"""Track successful hit"""
+	"""✅ Track successful hit (bullet connected with enemy)"""
+	hits_landed += 1
 	_update_accuracy()
 
 
 func _update_accuracy() -> void:
-	"""Calculate accuracy percentage"""
+	"""✅ Calculate accuracy percentage based on hits vs shots"""
 	if shots_fired > 0:
-		accuracy = (float(enemies_killed) / float(shots_fired)) * 100.0
+		accuracy = (float(hits_landed) / float(shots_fired)) * 100.0
+	else:
+		accuracy = 0.0
 
 
 func add_score(points: int) -> void:
@@ -465,6 +477,7 @@ func get_profile_data() -> Dictionary:
 		"stomps": enemies_stomped,
 		"gems": gems_collected,
 		"shots": shots_fired,
+		"hits": hits_landed,
 		"accuracy": accuracy,
 		"play_time": play_time,
 		"runs_completed": runs_completed,
@@ -500,7 +513,8 @@ Level: %d | XP: %d/%d
 Score: %d (High: %d)
 Depth: %dm (Max: %dm)
 Kills: %d | Stomps: %d
-Gems: %d | Accuracy: %.1f%%
+Gems: %d | Shots: %d | Hits: %d
+Accuracy: %.1f%%
 %s
 ==================
 """ % [
@@ -510,7 +524,8 @@ Gems: %d | Accuracy: %.1f%%
 		score, high_score,
 		depth, max_depth_reached,
 		enemies_killed, enemies_stomped,
-		gems_collected, accuracy,
+		gems_collected, shots_fired, hits_landed,
+		accuracy,
 		combo_str
 	]
 
@@ -595,6 +610,7 @@ func _load_profile() -> void:
 	total_play_time = save_data.get("play_time", 0)
 	runs_completed = save_data.get("runs_completed", 0)
 	last_login = save_data.get("last_login", 0)
+	hits_landed = save_data.get("hits", 0)
 	
 	# Check for returning player
 	var time_since_last_login = Time.get_unix_time_from_system() - last_login
@@ -635,6 +651,7 @@ func reset_run_stats() -> void:
 	depth = 0
 	gems_collected = 0
 	shots_fired = 0
+	hits_landed = 0
 	enemies_stomped = 0
 	perfect_stomp_streak = 0
 	accuracy = 0.0
@@ -662,6 +679,7 @@ func reset_profile() -> void:
 	total_play_time = 0
 	runs_completed = 0
 	last_login = 0
+	hits_landed = 0
 	
 	reset_run_stats()
 	

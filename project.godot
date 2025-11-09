@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="4ALL"
-run/main_scene="uid://dj2gvh7uw53s3"
+run/main_scene="uid://bkr1prvq63c7x"
 config/features=PackedStringArray("4.5", "Mobile")
 config/icon="res://icon.svg"
 
