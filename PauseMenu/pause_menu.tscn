@@ -1,34 +1,36 @@
-[gd_scene load_steps=11 format=3 uid="uid://f56013n24gjy"]
+[gd_scene load_steps=12 format=3 uid="uid://f56013n24gjy"]
 
 [ext_resource type="Script" uid="uid://dnwfj22hh0ksn" path="res://PauseMenu/pause_menu.gd" id="1_ganop"]
 [ext_resource type="FontFile" uid="uid://dtiujgu3wn57w" path="res://4all/Pixeled.ttf" id="1_tobvk"]
+[ext_resource type="FontFile" uid="uid://h85ncfprpff4" path="res://4all/ARCADECLASSIC.TTF" id="2_tfo3q"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_ganop"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_ganop"]
-font = ExtResource("1_tobvk")
-font_size = 24
+font = ExtResource("2_tfo3q")
+font_size = 42
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_tfo3q"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_tfo3q"]
-font = ExtResource("1_tobvk")
+font = ExtResource("2_tfo3q")
+font_size = 42
 
 [sub_resource type="LabelSettings" id="LabelSettings_3pbqp"]
-font = ExtResource("1_tobvk")
-font_size = 10
+font = ExtResource("2_tfo3q")
+font_size = 28
 
 [sub_resource type="LabelSettings" id="LabelSettings_q8wey"]
-font = ExtResource("1_tobvk")
-font_size = 10
+font = ExtResource("2_tfo3q")
+font_size = 28
 
 [sub_resource type="LabelSettings" id="LabelSettings_hy7yv"]
-font = ExtResource("1_tobvk")
-font_size = 10
+font = ExtResource("2_tfo3q")
+font_size = 28
 
 [sub_resource type="LabelSettings" id="LabelSettings_au66y"]
-font = ExtResource("1_tobvk")
-font_size = 10
+font = ExtResource("2_tfo3q")
+font_size = 28
 
 [node name="PauseMenu" type="CanvasLayer"]
 script = ExtResource("1_ganop")
@@ -42,6 +44,7 @@ grow_vertical = 2
 color = Color(0.0026177876, 0.0026177883, 0.0026177873, 1)
 
 [node name="Panel" type="Panel" parent="."]
+visible = false
 anchors_preset = -1
 anchor_top = 0.09
 anchor_right = 1.0
@@ -63,56 +66,59 @@ horizontal_alignment = 1
 
 [node name="VBoxContainer" type="VBoxContainer" parent="Panel"]
 layout_mode = 1
-anchors_preset = -1
-anchor_left = 0.012
-anchor_top = 0.264
-anchor_right = 0.012
-anchor_bottom = 0.264
-offset_left = 21.119999
-offset_top = -2.895996
-offset_right = 61.12
-offset_bottom = 37.104004
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -58.0
+offset_top = -100.5
+offset_right = 58.0
+offset_bottom = 100.5
+grow_horizontal = 2
+grow_vertical = 2
 
 [node name="Resume" type="Button" parent="Panel/VBoxContainer"]
 layout_mode = 2
-theme_override_fonts/font = ExtResource("1_tobvk")
-theme_override_font_sizes/font_size = 14
+theme_override_fonts/font = ExtResource("2_tfo3q")
+theme_override_font_sizes/font_size = 28
 text = "RESUME"
 flat = true
 alignment = 0
 
 [node name="Retry" type="Button" parent="Panel/VBoxContainer"]
 layout_mode = 2
-theme_override_fonts/font = ExtResource("1_tobvk")
-theme_override_font_sizes/font_size = 14
+theme_override_fonts/font = ExtResource("2_tfo3q")
+theme_override_font_sizes/font_size = 28
 text = "RETRY"
 flat = true
 alignment = 0
 
 [node name="Profile" type="Button" parent="Panel/VBoxContainer"]
 layout_mode = 2
-theme_override_fonts/font = ExtResource("1_tobvk")
-theme_override_font_sizes/font_size = 14
+theme_override_fonts/font = ExtResource("2_tfo3q")
+theme_override_font_sizes/font_size = 28
 text = "PROFILE"
 flat = true
 
 [node name="Stats" type="Button" parent="Panel/VBoxContainer"]
 layout_mode = 2
-theme_override_fonts/font = ExtResource("1_tobvk")
-theme_override_font_sizes/font_size = 14
+theme_override_fonts/font = ExtResource("2_tfo3q")
+theme_override_font_sizes/font_size = 28
 text = "STATS"
 flat = true
 alignment = 0
 
 [node name="Option" type="Button" parent="Panel/VBoxContainer"]
 layout_mode = 2
-theme_override_fonts/font = ExtResource("1_tobvk")
-theme_override_font_sizes/font_size = 14
+theme_override_fonts/font = ExtResource("2_tfo3q")
+theme_override_font_sizes/font_size = 28
 text = "OPTION"
 flat = true
 alignment = 0
 
 [node name="StatsPanel" type="Panel" parent="."]
+visible = false
 anchors_preset = -1
 anchor_top = 0.094000004
 anchor_right = 1.0
@@ -136,8 +142,8 @@ offset_right = 36.0
 offset_bottom = 20.859985
 grow_horizontal = 2
 grow_vertical = 0
-theme_override_fonts/font = ExtResource("1_tobvk")
-theme_override_font_sizes/font_size = 10
+theme_override_fonts/font = ExtResource("2_tfo3q")
+theme_override_font_sizes/font_size = 14
 text = "BACK"
 flat = true
 
@@ -179,6 +185,7 @@ label_settings = SubResource("LabelSettings_au66y")
 horizontal_alignment = 1
 
 [node name="ProfilePanel" type="Panel" parent="."]
+visible = false
 anchors_preset = -1
 anchor_top = 0.094000004
 anchor_right = 1.0
@@ -225,7 +232,8 @@ horizontal_alignment = 1
 
 [node name="XPBar" type="ProgressBar" parent="ProfilePanel/VBoxContainer"]
 layout_mode = 2
-theme_override_fonts/font = ExtResource("1_tobvk")
+theme_override_fonts/font = ExtResource("2_tfo3q")
+theme_override_font_sizes/font_size = 28
 
 [node name="Traits" type="Label" parent="ProfilePanel/VBoxContainer"]
 layout_mode = 2
@@ -271,12 +279,14 @@ grow_vertical = 2
 
 [node name="MusicToggle" type="CheckButton" parent="OptionsPanel/VBoxContainer"]
 layout_mode = 2
-theme_override_fonts/font = ExtResource("1_tobvk")
+theme_override_fonts/font = ExtResource("2_tfo3q")
+theme_override_font_sizes/font_size = 28
 text = "BGM"
 
 [node name="TimerToggle" type="CheckButton" parent="OptionsPanel/VBoxContainer"]
 layout_mode = 2
-theme_override_fonts/font = ExtResource("1_tobvk")
+theme_override_fonts/font = ExtResource("2_tfo3q")
+theme_override_font_sizes/font_size = 28
 text = "Timer"
 
 [node name="OptionsBackButton" type="Button" parent="OptionsPanel"]
@@ -292,8 +302,8 @@ offset_right = 36.0
 offset_bottom = 20.859985
 grow_horizontal = 2
 grow_vertical = 0
-theme_override_fonts/font = ExtResource("1_tobvk")
-theme_override_font_sizes/font_size = 10
+theme_override_fonts/font = ExtResource("2_tfo3q")
+theme_override_font_sizes/font_size = 14
 text = "BACK"
 flat = true
 

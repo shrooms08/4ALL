@@ -1,15 +1,15 @@
 [gd_scene load_steps=5 format=3 uid="uid://tymiu7300uqq"]
 
-[ext_resource type="FontFile" uid="uid://dtiujgu3wn57w" path="res://4all/Pixeled.ttf" id="1_862mm"]
 [ext_resource type="Script" uid="uid://belidglkllcnv" path="res://PowerupSelection/powerup_selection.gd" id="1_mmih1"]
+[ext_resource type="FontFile" uid="uid://h85ncfprpff4" path="res://4all/ARCADECLASSIC.TTF" id="2_mmih1"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_mmih1"]
-font = ExtResource("1_862mm")
-font_size = 10
+font = ExtResource("2_mmih1")
+font_size = 14
 
 [sub_resource type="LabelSettings" id="LabelSettings_ijlmo"]
-font = ExtResource("1_862mm")
-font_size = 5
+font = ExtResource("2_mmih1")
+font_size = 14
 font_color = Color(0.32915837, 0.3291584, 0.3291584, 1)
 
 [node name="PowerupSelection" type="CanvasLayer" groups=["powerup_selection"]]

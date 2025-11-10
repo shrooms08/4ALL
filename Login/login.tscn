@@ -1,31 +1,32 @@
-[gd_scene load_steps=10 format=3 uid="uid://bkr1prvq63c7x"]
+[gd_scene load_steps=11 format=3 uid="uid://bkr1prvq63c7x"]
 
 [ext_resource type="Script" uid="uid://b23nq4t8vywts" path="res://Login/login.gd" id="1_pjaqs"]
+[ext_resource type="FontFile" uid="uid://h85ncfprpff4" path="res://4all/ARCADECLASSIC.TTF" id="2_flad0"]
 [ext_resource type="FontFile" uid="uid://dtiujgu3wn57w" path="res://4all/Pixeled.ttf" id="2_vihoh"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_3mauu"]
-font = ExtResource("2_vihoh")
-font_size = 30
+font = ExtResource("2_flad0")
+font_size = 56
 
 [sub_resource type="LabelSettings" id="LabelSettings_h3fly"]
-font = ExtResource("2_vihoh")
-font_size = 10
+font = ExtResource("2_flad0")
+font_size = 14
 
 [sub_resource type="LabelSettings" id="LabelSettings_rucgh"]
 font = ExtResource("2_vihoh")
 font_size = 10
 
 [sub_resource type="LabelSettings" id="LabelSettings_pjaqs"]
-font = ExtResource("2_vihoh")
-font_size = 10
+font = ExtResource("2_flad0")
+font_size = 28
 
 [sub_resource type="LabelSettings" id="LabelSettings_vihoh"]
 font = ExtResource("2_vihoh")
 font_size = 10
 
 [sub_resource type="LabelSettings" id="LabelSettings_flad0"]
-font = ExtResource("2_vihoh")
-font_size = 10
+font = ExtResource("2_flad0")
+font_size = 28
 
 [sub_resource type="LabelSettings" id="LabelSettings_dyxnh"]
 font = ExtResource("2_vihoh")
@@ -50,6 +51,10 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
+[node name="ColorRect" type="ColorRect" parent="MainContainer/WelcomePanel"]
+layout_mode = 2
+color = Color(0, 0, 0, 1)
+
 [node name="VBox" type="VBoxContainer" parent="MainContainer/WelcomePanel"]
 layout_mode = 2
 size_flags_horizontal = 4
@@ -64,6 +69,7 @@ horizontal_alignment = 1
 layout_mode = 2
 text = "Choose how to continue"
 label_settings = SubResource("LabelSettings_h3fly")
+horizontal_alignment = 1
 
 [node name="Spacer1" type="Control" parent="MainContainer/WelcomePanel/VBox"]
 custom_minimum_size = Vector2(0, 30)
@@ -71,14 +77,14 @@ layout_mode = 2
 
 [node name="LoginButton" type="Button" parent="MainContainer/WelcomePanel/VBox"]
 layout_mode = 2
-theme_override_fonts/font = ExtResource("2_vihoh")
-theme_override_font_sizes/font_size = 10
+theme_override_fonts/font = ExtResource("2_flad0")
+theme_override_font_sizes/font_size = 28
 text = "LOGIN"
 
 [node name="SignupButton" type="Button" parent="MainContainer/WelcomePanel/VBox"]
 layout_mode = 2
-theme_override_fonts/font = ExtResource("2_vihoh")
-theme_override_font_sizes/font_size = 10
+theme_override_fonts/font = ExtResource("2_flad0")
+theme_override_font_sizes/font_size = 28
 text = "SIGN UP"
 
 [node name="Spacer2" type="Control" parent="MainContainer/WelcomePanel/VBox"]
@@ -97,15 +103,15 @@ layout_mode = 2
 
 [node name="WalletButton" type="Button" parent="MainContainer/WelcomePanel/VBox"]
 layout_mode = 2
-theme_override_fonts/font = ExtResource("2_vihoh")
-theme_override_font_sizes/font_size = 10
+theme_override_fonts/font = ExtResource("2_flad0")
+theme_override_font_sizes/font_size = 28
 text = "Connect Wallet"
 
 [node name="GuestButton" type="Button" parent="MainContainer/WelcomePanel/VBox"]
 layout_mode = 2
-theme_override_fonts/font = ExtResource("2_vihoh")
-theme_override_font_sizes/font_size = 10
-text = "Continue as Guest"
+theme_override_fonts/font = ExtResource("2_flad0")
+theme_override_font_sizes/font_size = 14
+text = "Guest"
 
 [node name="LoginPanel" type="PanelContainer" parent="MainContainer"]
 layout_mode = 1
@@ -114,6 +120,10 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+
+[node name="ColorRect" type="ColorRect" parent="MainContainer/LoginPanel"]
+layout_mode = 2
+color = Color(0, 0, 0, 1)
 
 [node name="VBox" type="VBoxContainer" parent="MainContainer/LoginPanel"]
 layout_mode = 2
@@ -131,15 +141,15 @@ layout_mode = 2
 
 [node name="UsernameInput" type="LineEdit" parent="MainContainer/LoginPanel/VBox"]
 layout_mode = 2
-theme_override_fonts/font = ExtResource("2_vihoh")
-theme_override_font_sizes/font_size = 10
+theme_override_fonts/font = ExtResource("2_flad0")
+theme_override_font_sizes/font_size = 14
 placeholder_text = "Username/Email"
 alignment = 1
 
 [node name="PasswordInput" type="LineEdit" parent="MainContainer/LoginPanel/VBox"]
 layout_mode = 2
-theme_override_fonts/font = ExtResource("2_vihoh")
-theme_override_font_sizes/font_size = 10
+theme_override_fonts/font = ExtResource("2_flad0")
+theme_override_font_sizes/font_size = 14
 placeholder_text = "Password"
 alignment = 1
 
@@ -149,8 +159,8 @@ layout_mode = 2
 
 [node name="LoginButton" type="Button" parent="MainContainer/LoginPanel/VBox"]
 layout_mode = 2
-theme_override_fonts/font = ExtResource("2_vihoh")
-theme_override_font_sizes/font_size = 10
+theme_override_fonts/font = ExtResource("2_flad0")
+theme_override_font_sizes/font_size = 28
 text = "LOGIN"
 
 [node name="Spacer3" type="Control" parent="MainContainer/LoginPanel/VBox"]
@@ -159,8 +169,8 @@ layout_mode = 2
 
 [node name="BackButton" type="Button" parent="MainContainer/LoginPanel/VBox"]
 layout_mode = 2
-theme_override_fonts/font = ExtResource("2_vihoh")
-theme_override_font_sizes/font_size = 10
+theme_override_fonts/font = ExtResource("2_flad0")
+theme_override_font_sizes/font_size = 14
 text = "Back"
 
 [node name="StatusLabel" type="Label" parent="MainContainer/LoginPanel/VBox"]
@@ -175,6 +185,10 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+
+[node name="ColorRect" type="ColorRect" parent="MainContainer/SignupPanel"]
+layout_mode = 2
+color = Color(0, 0, 0, 1)
 
 [node name="VBox" type="VBoxContainer" parent="MainContainer/SignupPanel"]
 layout_mode = 2
@@ -193,29 +207,29 @@ layout_mode = 2
 
 [node name="UsernameInput" type="LineEdit" parent="MainContainer/SignupPanel/VBox"]
 layout_mode = 2
-theme_override_fonts/font = ExtResource("2_vihoh")
-theme_override_font_sizes/font_size = 10
+theme_override_fonts/font = ExtResource("2_flad0")
+theme_override_font_sizes/font_size = 14
 placeholder_text = "Username"
 alignment = 1
 
 [node name="EmailInput" type="LineEdit" parent="MainContainer/SignupPanel/VBox"]
 layout_mode = 2
-theme_override_fonts/font = ExtResource("2_vihoh")
-theme_override_font_sizes/font_size = 10
+theme_override_fonts/font = ExtResource("2_flad0")
+theme_override_font_sizes/font_size = 14
 placeholder_text = "Email"
 alignment = 1
 
 [node name="PasswordInput" type="LineEdit" parent="MainContainer/SignupPanel/VBox"]
 layout_mode = 2
-theme_override_fonts/font = ExtResource("2_vihoh")
-theme_override_font_sizes/font_size = 10
+theme_override_fonts/font = ExtResource("2_flad0")
+theme_override_font_sizes/font_size = 14
 placeholder_text = "Password"
 alignment = 1
 
 [node name="ConfirmPasswordInput" type="LineEdit" parent="MainContainer/SignupPanel/VBox"]
 layout_mode = 2
-theme_override_fonts/font = ExtResource("2_vihoh")
-theme_override_font_sizes/font_size = 10
+theme_override_fonts/font = ExtResource("2_flad0")
+theme_override_font_sizes/font_size = 14
 placeholder_text = "Confirm Password"
 alignment = 1
 
@@ -225,8 +239,8 @@ layout_mode = 2
 
 [node name="SignupButton" type="Button" parent="MainContainer/SignupPanel/VBox"]
 layout_mode = 2
-theme_override_fonts/font = ExtResource("2_vihoh")
-theme_override_font_sizes/font_size = 10
+theme_override_fonts/font = ExtResource("2_flad0")
+theme_override_font_sizes/font_size = 28
 text = "CREATE"
 
 [node name="Spacer3" type="Control" parent="MainContainer/SignupPanel/VBox"]
@@ -235,8 +249,8 @@ layout_mode = 2
 
 [node name="BackButton" type="Button" parent="MainContainer/SignupPanel/VBox"]
 layout_mode = 2
-theme_override_fonts/font = ExtResource("2_vihoh")
-theme_override_font_sizes/font_size = 10
+theme_override_fonts/font = ExtResource("2_flad0")
+theme_override_font_sizes/font_size = 14
 text = "Back"
 
 [node name="StatusLabel" type="Label" parent="MainContainer/SignupPanel/VBox"]

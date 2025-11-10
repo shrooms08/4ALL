@@ -2,30 +2,33 @@
 
 [ext_resource type="Script" uid="uid://s0plr6qvih6q" path="res://PlayerUI/player_ui.gd" id="1_7unqp"]
 [ext_resource type="Texture2D" uid="uid://0getlsqaqv0a" path="res://4all/4all Tileset/Tilemap/tile_0042.png" id="1_ote8t"]
-[ext_resource type="FontFile" uid="uid://dtiujgu3wn57w" path="res://4all/Pixeled.ttf" id="2_7unqp"]
+[ext_resource type="FontFile" uid="uid://h85ncfprpff4" path="res://4all/ARCADECLASSIC.TTF" id="3_bo84p"]
 [ext_resource type="Texture2D" uid="uid://egpqvlp84hny" path="res://4all/tile_0062.png" id="4_bo84p"]
 [ext_resource type="Texture2D" uid="uid://bsckv2eij343i" path="res://4all/tile_0001.png" id="5_wvxna"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_t5672"]
-font = ExtResource("2_7unqp")
-font_size = 10
+font = ExtResource("3_bo84p")
+font_size = 14
 
 [sub_resource type="LabelSettings" id="LabelSettings_8l8wf"]
-font = ExtResource("2_7unqp")
-font_size = 10
+font = ExtResource("3_bo84p")
+font_size = 14
 
 [sub_resource type="LabelSettings" id="LabelSettings_7ip02"]
-font = ExtResource("2_7unqp")
-font_size = 10
+font = ExtResource("3_bo84p")
+font_size = 14
 
 [sub_resource type="LabelSettings" id="LabelSettings_bo84p"]
-font = ExtResource("2_7unqp")
-font_size = 10
+font = ExtResource("3_bo84p")
+font_size = 14
 
 [node name="PlayerUI" type="CanvasLayer" groups=["player_ui"]]
 script = ExtResource("1_7unqp")
 
 [node name="HBoxContainer" type="HBoxContainer" parent="."]
+anchors_preset = -1
+offset_left = 12.0
+offset_top = -1.0
 offset_right = 40.0
 offset_bottom = 40.0
 theme_override_constants/separation = 2
@@ -33,7 +36,7 @@ theme_override_constants/separation = 2
 [node name="HeartIcon" type="TextureRect" parent="HBoxContainer"]
 layout_mode = 2
 texture = ExtResource("1_ote8t")
-expand_mode = 2
+stretch_mode = 3
 
 [node name="NoOfLives" type="Label" parent="HBoxContainer"]
 layout_mode = 2
@@ -41,19 +44,19 @@ text = "x "
 label_settings = SubResource("LabelSettings_t5672")
 
 [node name="HBoxContainer2" type="HBoxContainer" parent="."]
-anchors_preset = 1
+anchors_preset = -1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -81.0
-offset_top = 1.0
-offset_right = -1.0
-offset_bottom = 41.0
+offset_left = -72.0
+offset_right = -20.0
+offset_bottom = 40.0
 grow_horizontal = 0
 
 [node name="GemIcon" type="TextureRect" parent="HBoxContainer2"]
 layout_mode = 2
 texture = ExtResource("4_bo84p")
 expand_mode = 2
+stretch_mode = 5
 
 [node name="Label" type="Label" parent="HBoxContainer2"]
 layout_mode = 2
@@ -61,13 +64,13 @@ text = "0"
 label_settings = SubResource("LabelSettings_8l8wf")
 
 [node name="HBoxContainer3" type="HBoxContainer" parent="."]
-anchors_preset = 4
+anchors_preset = -1
 anchor_top = 0.5
 anchor_bottom = 0.5
-offset_left = 1.0
-offset_top = -158.0
-offset_right = 46.0
-offset_bottom = -118.0
+offset_left = 2.0
+offset_top = -165.0
+offset_right = 47.0
+offset_bottom = -125.0
 grow_vertical = 2
 theme_override_constants/separation = -6
 
@@ -82,9 +85,9 @@ text = "0"
 label_settings = SubResource("LabelSettings_7ip02")
 
 [node name="TimerLabel" type="Label" parent="."]
-offset_left = 179.0
-offset_top = 51.0
-offset_right = 180.0
-offset_bottom = 97.0
+offset_left = 204.0
+offset_top = 45.0
+offset_right = 205.0
+offset_bottom = 91.0
 size_flags_horizontal = 8
 label_settings = SubResource("LabelSettings_bo84p")
