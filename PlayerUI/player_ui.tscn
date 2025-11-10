@@ -22,6 +22,14 @@ font_size = 14
 font = ExtResource("3_bo84p")
 font_size = 14
 
+[sub_resource type="LabelSettings" id="LabelSettings_session"]
+font = ExtResource("3_bo84p")
+font_size = 12
+
+[sub_resource type="LabelSettings" id="LabelSettings_error"]
+font = ExtResource("3_bo84p")
+font_size = 12
+
 [node name="PlayerUI" type="CanvasLayer" groups=["player_ui"]]
 script = ExtResource("1_7unqp")
 
@@ -91,3 +99,46 @@ offset_right = 205.0
 offset_bottom = 91.0
 size_flags_horizontal = 8
 label_settings = SubResource("LabelSettings_bo84p")
+
+[node name="SessionInfo" type="VBoxContainer" parent="."]
+offset_left = 8.0
+offset_top = 48.0
+offset_right = 200.0
+offset_bottom = 160.0
+size_flags_horizontal = 2
+theme_override_constants/separation = 0
+
+[node name="UsernameLabel" type="Label" parent="SessionInfo"]
+layout_mode = 2
+text = "Player"
+label_settings = SubResource("LabelSettings_session")
+
+[node name="CoinsLabel" type="Label" parent="SessionInfo"]
+layout_mode = 2
+text = "Coins: --"
+label_settings = SubResource("LabelSettings_session")
+
+[node name="ScoreLabel" type="Label" parent="SessionInfo"]
+layout_mode = 2
+text = "Score: 0"
+label_settings = SubResource("LabelSettings_session")
+
+[node name="KillsLabel" type="Label" parent="SessionInfo"]
+layout_mode = 2
+text = "Kills: 0"
+label_settings = SubResource("LabelSettings_session")
+
+[node name="DepthLabel" type="Label" parent="SessionInfo"]
+layout_mode = 2
+text = "Depth: 0"
+label_settings = SubResource("LabelSettings_session")
+
+[node name="ArenaStatusLabel" type="Label" parent="SessionInfo"]
+layout_mode = 2
+text = "Arena: --"
+label_settings = SubResource("LabelSettings_session")
+
+[node name="ServerStatusLabel" type="Label" parent="SessionInfo"]
+layout_mode = 2
+text = ""
+label_settings = SubResource("LabelSettings_error")

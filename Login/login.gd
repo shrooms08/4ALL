@@ -41,10 +41,6 @@ const MAIN_MENU_SCENE = "res://PlayScene/play_scene.tscn"
 const MAX_LOGIN_ATTEMPTS = 5
 const LOCKOUT_TIME = 300  # 5 minutes in seconds
 
-const DEFAULT_API_BASE_URL := "http://localhost:9080"
-const DEFAULT_API_PATH := "/api"
-const API_TIMEOUT_SECONDS := 30.0
-
 enum SignupState { FORM, OTP_PENDING }
 
 # ===== SIGNALS =====
@@ -55,8 +51,6 @@ signal signup_successful(user_data: Dictionary)
 enum PanelState { WELCOME, LOGIN, SIGNUP }
 var current_panel: PanelState = PanelState.WELCOME
 var _login_attempts: Dictionary = {}  # Track failed login attempts
-var _api_base_url: String = DEFAULT_API_BASE_URL
-var _api_path_prefix: String = DEFAULT_API_PATH
 var _signup_state: SignupState = SignupState.FORM
 var _pending_signup_email: String = ""
 var _pending_signup_password: String = ""
@@ -103,7 +97,6 @@ func _setup_ui() -> void:
 	
 	# Optional: Add styling
 	_apply_theme()
-	_configure_api_settings()
 
 
 func _apply_theme() -> void:
@@ -111,249 +104,6 @@ func _apply_theme() -> void:
 	login_status.add_theme_color_override("font_color", Color.WHITE)
 	signup_status.add_theme_color_override("font_color", Color.WHITE)
 
-
-func _configure_api_settings() -> void:
-	_api_base_url = _determine_api_base_url()
-	_api_path_prefix = _determine_api_path_prefix()
-
-
-func _determine_api_base_url() -> String:
-	var env_url := OS.get_environment("FOURALL_API_BASE_URL")
-	if not env_url.is_empty():
-		return _sanitize_base_url(env_url)
-	
-	const PROJECT_SETTING := "application/config/4all_api_base_url"
-	if ProjectSettings.has_setting(PROJECT_SETTING):
-		var configured = ProjectSettings.get_setting(PROJECT_SETTING)
-		if typeof(configured) == TYPE_STRING and not String(configured).is_empty():
-			return _sanitize_base_url(String(configured))
-	
-	return DEFAULT_API_BASE_URL
-
-
-func _determine_api_path_prefix() -> String:
-	const PROJECT_SETTING := "application/config/4all_api_path"
-	if ProjectSettings.has_setting(PROJECT_SETTING):
-		var configured = ProjectSettings.get_setting(PROJECT_SETTING)
-		if typeof(configured) == TYPE_STRING and not String(configured).is_empty():
-			return _sanitize_path_prefix(String(configured))
-	
-	return DEFAULT_API_PATH
-
-
-func _sanitize_base_url(url: String) -> String:
-	var trimmed := url.strip_edges()
-	if trimmed.ends_with("/"):
-		trimmed = trimmed.substr(0, trimmed.length() - 1)
-	return trimmed
-
-
-func _sanitize_path_prefix(path: String) -> String:
-	var normalized := path.strip_edges()
-	if normalized.is_empty():
-		return ""
-	if not normalized.begins_with("/"):
-		normalized = "/" + normalized
-	if normalized.ends_with("/"):
-		normalized = normalized.substr(0, normalized.length() - 1)
-	return normalized
-
-
-# ===== API HELPERS =====
-
-func _build_api_url(path: String) -> String:
-	var base := _api_base_url
-	if path.begins_with("http://") or path.begins_with("https://"):
-		return path
-	
-	var relative := _trim_leading_slash(path)
-	if _api_path_prefix.is_empty():
-		return "%s/%s" % [base, relative]
-	else:
-		return "%s%s/%s" % [base, _api_path_prefix, relative]
-
-
-func _create_request_headers(extra_headers: Array = []) -> Array:
-	var headers: Array = ["Content-Type: application/json"]
-	headers.append_array(extra_headers)
-	return headers
-
-
-func _trim_leading_slash(path: String) -> String:
-	if path.begins_with("/"):
-		return path.substr(1, path.length() - 1)
-	return path
-
-
-func _send_api_request(method: int, path: String, payload: Dictionary = {}, extra_headers: Array = []) -> Dictionary:
-	var request := HTTPRequest.new()
-	request.timeout = API_TIMEOUT_SECONDS
-	add_child(request)
-	
-	var body := ""
-	if not payload.is_empty():
-		body = JSON.stringify(payload)
-	
-	var err := request.request(_build_api_url(path), _create_request_headers(extra_headers), method, body)
-	if err != OK:
-		request.queue_free()
-		return {
-			"ok": false,
-			"error": "Failed to start request",
-			"code": err
-		}
-	
-	var result: Array = await request.request_completed
-	request.queue_free()
-	
-	var request_result: int = result[0]
-	var status_code: int = result[1]
-	var body_bytes: PackedByteArray = result[3]
-	
-	if request_result != HTTPRequest.RESULT_SUCCESS:
-		return {
-			"ok": false,
-			"error": "Network error",
-			"result": request_result,
-			"status_code": status_code
-		}
-	
-	var body_text := ""
-	if body_bytes:
-		body_text = body_bytes.get_string_from_utf8()
-	
-	var json := JSON.new()
-	var parse_err := json.parse(body_text)
-	var data := {}
-	if parse_err == OK and typeof(json.data) == TYPE_DICTIONARY:
-		data = json.data
-	
-	var success: bool = (
-		status_code >= 200
-		and status_code < 300
-		and typeof(data) == TYPE_DICTIONARY
-		and bool(data.get("success", false))
-	)
-	
-	return {
-		"ok": success,
-		"status_code": status_code,
-		"data": data,
-		"raw_body": body_text
-	}
-
-
-func _extract_payload(response_data: Dictionary) -> Dictionary:
-	var current := response_data
-	var depth := 0
-	while typeof(current) == TYPE_DICTIONARY and current.has("data") and depth < 4:
-		var next_layer = current.get("data")
-		if typeof(next_layer) == TYPE_DICTIONARY:
-			current = next_layer
-			depth += 1
-		else:
-			break
-	return current
-
-
-func _get_error_message(response: Dictionary, default_message: String) -> String:
-	if response.has("error"):
-		return str(response["error"])
-	
-	if response.has("data") and typeof(response["data"]) == TYPE_DICTIONARY:
-		var data: Dictionary = response["data"]
-		if data.has("error"):
-			return str(data["error"])
-		if data.has("message"):
-			return str(data["message"])
-		
-		var payload := _extract_payload(data)
-		if payload.has("error"):
-			return str(payload["error"])
-		if payload.has("message"):
-			return str(payload["message"])
-	
-	if response.has("raw_body") and str(response["raw_body"]).length() > 0:
-		return str(response["raw_body"])
-	
-	if response.has("status_code"):
-		return "%s (HTTP %d)" % [default_message, int(response["status_code"])]
-	
-	return default_message
-
-
-func _api_login(email: String, password: String) -> Dictionary:
-	var response := await _send_api_request(HTTPClient.METHOD_POST, "auth/login", {
-		"email": email,
-		"password": password
-	})
-	
-	if response.get("ok", false) and response.has("data"):
-		response["payload"] = _extract_payload(response["data"])
-	
-	return response
-
-
-func _api_request_otp(email: String, password: String) -> Dictionary:
-	var response := await _send_api_request(HTTPClient.METHOD_POST, "auth/request-otp", {
-		"email": email,
-		"password": password
-	})
-	
-	if response.get("ok", false) and response.has("data"):
-		response["payload"] = _extract_payload(response["data"])
-	
-	return response
-
-
-func _api_verify_otp(email: String, otp: String) -> Dictionary:
-	var response := await _send_api_request(HTTPClient.METHOD_POST, "auth/verify-otp", {
-		"email": email,
-		"otp": otp
-	})
-	
-	if response.get("ok", false) and response.has("data"):
-		response["payload"] = _extract_payload(response["data"])
-	
-	return response
-
-
-func _update_bridge_token(token: String) -> Dictionary:
-	var trimmed := token.strip_edges()
-	if trimmed.is_empty():
-		return {"ok": false, "error": "Token cannot be empty."}
-	return await _send_api_request(HTTPClient.METHOD_POST, "config/user-token", {
-		"token": trimmed
-	})
-
-
-func _init_bridge_game(stream_url: String = "") -> Dictionary:
-	var payload := {}
-	var trimmed := stream_url.strip_edges()
-	if not trimmed.is_empty():
-		payload["streamUrl"] = trimmed
-	return await _send_api_request(HTTPClient.METHOD_POST, "games", payload)
-
-
-func _sync_bridge_session(access_token: String) -> void:
-	var trimmed := access_token.strip_edges()
-	if trimmed.is_empty():
-		return
-	
-	print("🔄 Syncing bridge session with new access token...")
-	var update_response := await _update_bridge_token(trimmed)
-	if not update_response.get("ok", false):
-		var error_message := _get_error_message(update_response, "Failed to update bridge token.")
-		push_warning("Bridge token update failed: %s" % error_message)
-		return
-	
-	print("✅ Bridge token updated. Initializing arena game...")
-	var init_response := await _init_bridge_game()
-	if not init_response.get("ok", false):
-		var init_error := _get_error_message(init_response, "Failed to initialize arena game.")
-		push_warning("Arena initialization failed: %s" % init_error)
-	else:
-		print("🎮 Arena game initialized via bridge API.")
 
 
 func _process_login_payload(email: String, payload: Dictionary, raw_response: Dictionary = {}, display_name_override: String = "", extra_session_fields: Dictionary = {}) -> Dictionary:
@@ -530,7 +280,7 @@ func _on_login_pressed() -> void:
 	_set_buttons_enabled(false, PanelState.LOGIN)
 	_show_status("Logging in...", false, PanelState.LOGIN)
 	
-	var response = await _api_login(email, password)
+	var response := await VorldClient.login(email, password)
 	
 	if response.get("ok", false):
 		_clear_login_attempts(email)
@@ -540,7 +290,10 @@ func _on_login_pressed() -> void:
 		
 		if login_result.get("saved", false):
 			_show_status("Login successful!", false, PanelState.LOGIN)
-			await _sync_bridge_session(login_result.get("access_token", ""))
+			var sync_response := await VorldClient.sync_session(login_result.get("access_token", ""))
+			if not sync_response.get("ok", true):
+				var sync_error := VorldClient.get_error_message(sync_response, "Failed to synchronize bridge session.")
+				push_warning("Bridge sync warning: %s" % sync_error)
 			login_successful.emit({
 				"user_id": login_result.get("display_name", email),
 				"login_type": "vorld",
@@ -556,7 +309,7 @@ func _on_login_pressed() -> void:
 	else:
 		_record_failed_attempt(email)
 		
-		var message := _get_error_message(response, "Login failed.")
+		var message := VorldClient.get_error_message(response, "Login failed.")
 		
 		var attempts_left = MAX_LOGIN_ATTEMPTS - _get_attempt_count(email)
 		if attempts_left > 0:
@@ -612,10 +365,10 @@ func _submit_signup_form() -> void:
 	_set_buttons_enabled(false, PanelState.SIGNUP)
 	_show_status("Requesting verification code...", false, PanelState.SIGNUP)
 	
-	var response = await _api_request_otp(email, password)
+	var response := await VorldClient.request_otp(email, password)
 	
 	if not response.get("ok", false):
-		var error_message = _get_error_message(response, "Failed to request OTP.")
+		var error_message := VorldClient.get_error_message(response, "Failed to request OTP.")
 		_show_status(error_message, true, PanelState.SIGNUP)
 		_set_buttons_enabled(true, PanelState.SIGNUP)
 		return
@@ -626,12 +379,15 @@ func _submit_signup_form() -> void:
 	
 	if not requires_otp and payload.has("accessToken"):
 		_show_status("Account ready! Logging you in...", false, PanelState.SIGNUP)
-		var login_response = await _api_login(email, password)
+		var login_response := await VorldClient.login(email, password)
 		
 		if login_response.get("ok", false):
 			var login_result: Dictionary = _process_login_payload(email, login_response.get("payload", {}), login_response.get("data", {}), "", extra_fields)
 			if login_result.get("saved", false):
-				await _sync_bridge_session(login_result.get("access_token", ""))
+				var sync_response := await VorldClient.sync_session(login_result.get("access_token", ""))
+				if not sync_response.get("ok", true):
+					var sync_error := VorldClient.get_error_message(sync_response, "Failed to synchronize bridge session.")
+					push_warning("Bridge sync warning: %s" % sync_error)
 				signup_successful.emit({
 					"user_id": login_result.get("display_name", email),
 					"login_type": "vorld",
@@ -646,7 +402,7 @@ func _submit_signup_form() -> void:
 				_show_status("Account created but failed to save session.", true, PanelState.SIGNUP)
 				_set_buttons_enabled(true, PanelState.SIGNUP)
 		else:
-			var login_error = _get_error_message(login_response, "Login failed.")
+			var login_error := VorldClient.get_error_message(login_response, "Login failed.")
 			_show_status(login_error, true, PanelState.SIGNUP)
 			_set_buttons_enabled(true, PanelState.SIGNUP)
 		return
@@ -683,20 +439,20 @@ func _submit_signup_otp() -> void:
 	_set_buttons_enabled(false, PanelState.SIGNUP)
 	_show_status("Verifying OTP...", false, PanelState.SIGNUP)
 	
-	var response = await _api_verify_otp(_pending_signup_email, otp)
+	var response := await VorldClient.verify_otp(_pending_signup_email, otp)
 	
 	if not response.get("ok", false):
-		var error_message = _get_error_message(response, "Failed to verify OTP.")
+		var error_message := VorldClient.get_error_message(response, "Failed to verify OTP.")
 		_show_status(error_message, true, PanelState.SIGNUP)
 		_set_buttons_enabled(true, PanelState.SIGNUP)
 		return
 	
 	_show_status("OTP verified! Logging you in...", false, PanelState.SIGNUP)
 	
-	var login_response = await _api_login(_pending_signup_email, _pending_signup_password)
+	var login_response := await VorldClient.login(_pending_signup_email, _pending_signup_password)
 	
 	if not login_response.get("ok", false):
-		var login_error = _get_error_message(login_response, "Login failed after verification.")
+		var login_error := VorldClient.get_error_message(login_response, "Login failed after verification.")
 		_show_status(login_error, true, PanelState.SIGNUP)
 		_set_buttons_enabled(true, PanelState.SIGNUP)
 		return
@@ -712,7 +468,10 @@ func _submit_signup_otp() -> void:
 		_set_buttons_enabled(true, PanelState.SIGNUP)
 		return
 	
-	await _sync_bridge_session(login_result.get("access_token", ""))
+	var sync_response := await VorldClient.sync_session(login_result.get("access_token", ""))
+	if not sync_response.get("ok", true):
+		var sync_error := VorldClient.get_error_message(sync_response, "Failed to synchronize bridge session.")
+		push_warning("Bridge sync warning: %s" % sync_error)
 	
 	signup_successful.emit({
 		"user_id": login_result.get("display_name", _pending_signup_email),
