@@ -1,6 +1,6 @@
 extends Node
 
-const DEFAULT_API_BASE_URL := "http://localhost:9080"
+const DEFAULT_API_BASE_URL := "https://4all-server.vercel.app/"
 const DEFAULT_API_PATH := "/api"
 const API_TIMEOUT_SECONDS := 30.0
 
@@ -302,4 +302,3 @@ func _sanitize_path_prefix(path: String) -> String:
 	if normalized.ends_with("/"):
 		normalized = normalized.substr(0, normalized.length() - 1)
 	return normalized
-
