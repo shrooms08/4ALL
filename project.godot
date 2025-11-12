@@ -21,6 +21,7 @@ GameManager="*res://Manager/game_manager.gd"
 GemSpawner="*res://Manager/gem_spawner.gd"
 AudienceSpawn="*res://AudienceEnemySpawner/audience_enemy_spawner.gd"
 ComboManagr="*res://Manager/combo_manager.gd"
+VorldClient="*res://Manager/vorld_client.gd"
 
 [display]
 

@@ -9,14 +9,23 @@ extends CanvasLayer
 @onready var bullet_icon: TextureRect = $HBoxContainer3/BulletIcon
 @onready var bullet_count: Label = $HBoxContainer3/BulletCount
 @onready var timer_label: Label = $TimerLabel
+@onready var username_label: Label = $SessionInfo/UsernameLabel
+@onready var coins_label: Label = $SessionInfo/CoinsLabel
+@onready var score_label: Label = $SessionInfo/ScoreLabel
+@onready var kills_label: Label = $SessionInfo/KillsLabel
+@onready var depth_label: Label = $SessionInfo/DepthLabel
+@onready var arena_status_label: Label = $SessionInfo/ArenaStatusLabel
+@onready var server_status_label: Label = $SessionInfo/ServerStatusLabel
 
 # Viewer interaction notification
 var notification_label: Label = null
 var notification_queue: Array = []
 var notification_showing: bool = false
+var server_status_tween: Tween = null
 
 var player: Node = null
 var elapsed_time: float = 0.0
+var viewer_manager: Node = null
 
 func _ready():
 	if player_path:
@@ -59,6 +68,9 @@ func _ready():
 	# Create notification label
 	_setup_notification_label()
 	add_to_group("player_ui")
+	_update_session_info()
+	_connect_game_manager()
+	call_deferred("_connect_viewer_manager")
 
 func _setup_notification_label() -> void:
 	"""Create a label for viewer interaction notifications"""
@@ -72,6 +84,9 @@ func _setup_notification_label() -> void:
 	notification_label.modulate = Color(1, 1, 1, 0)
 	notification_label.z_index = 100
 	add_child(notification_label)
+	if server_status_label:
+		server_status_label.visible = false
+		server_status_label.modulate = Color.WHITE
 
 func _process(delta: float) -> void:
 	if player and player.is_inside_tree() and not get_tree().paused:
@@ -143,3 +158,105 @@ func _show_next_notification() -> void:
 	
 	await tween.finished
 	_show_next_notification()
+
+func _connect_game_manager() -> void:
+	if not Engine.has_singleton("GameManager"):
+		return
+	var gm = GameManager
+	if not gm:
+		return
+	if gm.has_signal("stats_updated") and not gm.stats_updated.is_connected(_on_stats_updated):
+		gm.stats_updated.connect(_on_stats_updated)
+	if gm.has_signal("profile_updated") and not gm.profile_updated.is_connected(_on_profile_updated):
+		gm.profile_updated.connect(_on_profile_updated)
+	if gm.has_signal("server_sync_failed") and not gm.server_sync_failed.is_connected(_on_server_sync_failed):
+		gm.server_sync_failed.connect(_on_server_sync_failed)
+	if gm.has_signal("server_sync_succeeded") and not gm.server_sync_succeeded.is_connected(_on_server_sync_succeeded):
+		gm.server_sync_succeeded.connect(_on_server_sync_succeeded)
+
+func _connect_viewer_manager() -> void:
+	var managers = get_tree().get_nodes_in_group("viewer_manager")
+	if managers.size() == 0:
+		return
+	viewer_manager = managers[0]
+	if viewer_manager.has_signal("arena_countdown_started") and not viewer_manager.arena_countdown_started.is_connected(_on_arena_countdown_started):
+		viewer_manager.arena_countdown_started.connect(_on_arena_countdown_started)
+	if viewer_manager.has_signal("arena_live") and not viewer_manager.arena_live.is_connected(_on_arena_live):
+		viewer_manager.arena_live.connect(_on_arena_live)
+	if viewer_manager.has_signal("viewer_boost_received") and not viewer_manager.viewer_boost_received.is_connected(_on_viewer_boost_received):
+		viewer_manager.viewer_boost_received.connect(_on_viewer_boost_received)
+	if viewer_manager.has_signal("countdown_update") and not viewer_manager.countdown_update.is_connected(_on_countdown_update):
+		viewer_manager.countdown_update.connect(_on_countdown_update)
+
+func _update_session_info() -> void:
+	if not Engine.has_singleton("GameManager"):
+		return
+	var gm = GameManager
+	if not gm:
+		return
+
+	username_label.text = gm.player_name
+
+	var coins = gm.profile.get("arenaCoins") if gm.profile else null
+	if coins == null:
+		coins_label.text = "Coins: --"
+	else:
+		coins_label.text = "Coins: %s" % str(coins)
+
+	score_label.text = "Score: %d" % gm.score
+	kills_label.text = "Kills: %d" % gm.enemies_killed
+	depth_label.text = "Depth: %d" % gm.depth
+
+func _on_stats_updated() -> void:
+	_update_session_info()
+
+func _on_profile_updated(profile: Dictionary) -> void:
+	_update_session_info()
+
+func _on_server_sync_failed(message: String) -> void:
+	_show_server_status("Sync failed: %s" % message, Color(1, 0.4, 0.4), 4.0)
+
+func _on_server_sync_succeeded(timestamp: int) -> void:
+	var dt = Time.get_datetime_dict_from_unix_time(timestamp)
+	var formatted := "%02d:%02d:%02d" % [int(dt.hour), int(dt.minute), int(dt.second)]
+	_show_server_status("Last sync: %s" % formatted, Color(0.6, 1.0, 0.6), 2.5)
+
+func _show_server_status(message: String, color: Color, duration: float = 3.0) -> void:
+	if not server_status_label:
+		return
+	server_status_label.text = message
+	server_status_label.modulate = color
+	server_status_label.visible = true
+
+	if server_status_tween:
+		server_status_tween.kill()
+	server_status_tween = create_tween()
+	server_status_tween.tween_interval(duration)
+	server_status_tween.tween_callback(Callable(self, "_clear_server_status"))
+
+func _clear_server_status() -> void:
+	server_status_tween = null
+	if server_status_label:
+		server_status_label.visible = false
+		server_status_label.text = ""
+
+func _on_arena_countdown_started(seconds: int) -> void:
+	if arena_status_label:
+		arena_status_label.text = "Arena: Countdown %ds" % seconds
+
+func _on_countdown_update(seconds_remaining: int) -> void:
+	if arena_status_label:
+		arena_status_label.text = "Arena: %ds remain" % seconds_remaining
+
+func _on_arena_live() -> void:
+	if arena_status_label:
+		arena_status_label.text = "Arena: LIVE"
+		show_notification("ARENA LIVE! Viewers can interact!", Color.GREEN_YELLOW, 3.0)
+
+func _on_viewer_boost_received(booster: String, amount: int, coins: int) -> void:
+	show_notification("%s boosted you! (+%d)" % [booster, amount], Color.CYAN, 2.5)
+	#_acknowledge_event("player_boost", {
+		#"booster": booster,
+		#"amount": amount,
+		#"coins": coins
+	#})

@@ -27,6 +27,7 @@ signal viewer_boost_received(booster_name: String, amount: int, coins_spent: int
 signal viewer_item_dropped(item_id: String, item_name: String, metadata: Dictionary)
 signal viewer_package_dropped(items: Array)
 signal viewer_custom_event(event_name: String, data: Dictionary)
+signal countdown_update(seconds_remaining: int)
 
 # Effect configuration
 const BOOST_SPEED_MULTIPLIER = 1.5
@@ -173,6 +174,7 @@ func _handle_countdown_update(event: Dictionary) -> void:
 	countdown_seconds = event.get("secondsRemaining", 0)
 	if countdown_seconds <= 10 and countdown_seconds > 0:
 		_show_notification(str(countdown_seconds), Color.YELLOW, 0.8)
+	emit_signal("countdown_update", countdown_seconds)
 
 func _handle_arena_begins(event: Dictionary) -> void:
 	arena_active = true
@@ -194,6 +196,7 @@ func _handle_player_boost(event: Dictionary) -> void:
 	
 	# Show notification
 	_show_notification("%s boosted you! (+%d)" % [booster, amount], Color.CYAN, 2.0)
+	_acknowledge_event("player_boost", event)
 
 func _handle_package_drop(event: Dictionary) -> void:
 	var items = event.get("items", [])
@@ -205,6 +208,7 @@ func _handle_package_drop(event: Dictionary) -> void:
 		_spawn_item_from_package(item)
 	
 	_show_notification("Package dropped!", Color.PURPLE, 2.0)
+	_acknowledge_event("package_drop", event)
 
 func _handle_immediate_item_drop(event: Dictionary) -> void:
 	var item_id = event.get("itemId", "")
@@ -218,6 +222,7 @@ func _handle_immediate_item_drop(event: Dictionary) -> void:
 	_spawn_immediate_item(item_id, item_name, metadata)
 	
 	_show_notification("Item: " + item_name, Color.GOLD, 2.0)
+	_acknowledge_event("immediate_item_drop", event)
 
 func _handle_custom_event(event: Dictionary) -> void:
 	var event_name = event.get("eventName", "")
@@ -385,4 +390,21 @@ func _show_notification(text: String, color: Color = Color.WHITE, duration: floa
 func _exit_tree() -> void:
 	if socket:
 		socket.close()
+
+func _acknowledge_event(event_type: String, payload: Dictionary) -> void:
+	if not Engine.has_singleton("VorldClient"):
+		return
+	var payload_copy: Dictionary = payload.duplicate(true)
+	call_deferred("_acknowledge_event_internal", event_type, payload_copy)
+
+func _acknowledge_event_internal(event_type: String, payload: Dictionary) -> void:
+	var ack_payload: Dictionary = {
+		"eventType": event_type,
+		"payload": payload,
+		"clientTimestamp": Time.get_unix_time_from_system()
+	}
+	var response := await VorldClient.acknowledge_event(event_type, ack_payload)
+	if not response.get("ok", false):
+		var error_msg := VorldClient.get_error_message(response, "Event acknowledgement failed.")
+		push_warning("Event ack failed: %s" % error_msg)
 

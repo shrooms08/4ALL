@@ -41,6 +41,7 @@ var session_start_time: int = 0
 var total_play_time: int = 0
 var runs_completed: int = 0
 var last_login: int = 0
+var _stats_sync_pending: bool = false
 
 # ===== SIGNALS =====
 signal user_loaded(user_data: Dictionary)
@@ -54,11 +55,17 @@ signal powerup_available
 signal perfect_stomp_achieved(streak: int)
 signal profile_saved
 signal profile_loaded
+signal profile_updated(profile: Dictionary)
+signal server_sync_failed(message: String)
+signal server_sync_succeeded(timestamp: int)
 
 
 func _ready() -> void:
 	add_to_group("game_manager")
 	session_start_time = Time.get_unix_time_from_system()
+	
+	if not stats_updated.is_connected(_on_stats_updated_internal):
+		stats_updated.connect(_on_stats_updated_internal)
 	
 	# Load user session first
 	_load_user_session()
@@ -114,6 +121,23 @@ func _load_user_session() -> void:
 		push_warning("Empty user ID. Creating guest session.")
 		_create_guest_session()
 		return
+
+	if not access_token.is_empty():
+		VorldClient.set_access_token(access_token)
+		var profile_response := await VorldClient.fetch_profile()
+		if profile_response.get("ok", false):
+			var payload: Dictionary = profile_response.get("payload", {})
+			if not payload.is_empty():
+				profile = payload
+				if payload.has("user") and typeof(payload["user"]) == TYPE_DICTIONARY:
+					var user_info: Dictionary = payload["user"]
+					if display_name.is_empty() and user_info.has("username"):
+						display_name = str(user_info["username"])
+				profile_updated.emit(profile)
+		else:
+			var error_msg := VorldClient.get_error_message(profile_response, "Failed to fetch profile.")
+			push_warning("Profile fetch failed: %s" % error_msg)
+			server_sync_failed.emit(error_msg)
 	
 	# Set player name based on login type
 	if not display_name.is_empty():
@@ -134,6 +158,7 @@ func _load_user_session() -> void:
 	
 	# Load player profile data
 	_load_profile()
+	call_deferred("_sync_stats_with_server")
 
 
 func _create_guest_session() -> void:
@@ -147,6 +172,58 @@ func _create_guest_session() -> void:
 	profile = {}
 	display_name = ""
 	print("🎮 Guest session created:", user_id)
+
+
+func _on_stats_updated_internal() -> void:
+	if _stats_sync_pending:
+		return
+	_stats_sync_pending = true
+	call_deferred("_sync_stats_with_server")
+
+
+func _build_stats_payload() -> Dictionary:
+	return {
+		"userId": user_id,
+		"displayName": player_name,
+		"loginType": login_type,
+		"email": email,
+		"level": level,
+		"score": score,
+		"highScore": high_score,
+		"enemiesKilled": enemies_killed,
+		"gemsCollected": gems_collected,
+		"shotsFired": shots_fired,
+		"hitsLanded": hits_landed,
+		"accuracy": accuracy,
+		"totalXp": total_xp,
+		"xpToNextLevel": xp_to_next_level,
+		"perfectStompStreak": perfect_stomp_streak,
+		"timestamp": Time.get_unix_time_from_system(),
+		"arenaCoins": profile.get("arenaCoins", 0),
+		"profile": profile
+	}
+
+
+func _sync_stats_with_server() -> void:
+	_stats_sync_pending = false
+
+	if access_token.is_empty():
+		return
+
+	VorldClient.set_access_token(access_token)
+
+	var payload := _build_stats_payload()
+	if payload.is_empty():
+		return
+
+	var response := await VorldClient.update_player_stats(payload)
+	if not response.get("ok", false):
+		var error_msg := VorldClient.get_error_message(response, "Failed to update player stats.")
+		push_warning("Stats sync failed: %s" % error_msg)
+		server_sync_failed.emit(error_msg)
+	else:
+		var timestamp: int = Time.get_unix_time_from_system()
+		server_sync_succeeded.emit(timestamp)
 
 
 # ===== POWERUP UI INITIALIZATION =====
