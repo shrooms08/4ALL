@@ -114,6 +114,7 @@ theme_override_font_sizes/font_size = 14
 text = "Guest"
 
 [node name="LoginPanel" type="PanelContainer" parent="MainContainer"]
+visible = false
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -141,15 +142,15 @@ layout_mode = 2
 
 [node name="UsernameInput" type="LineEdit" parent="MainContainer/LoginPanel/VBox"]
 layout_mode = 2
-theme_override_fonts/font = ExtResource("2_flad0")
-theme_override_font_sizes/font_size = 14
+theme_override_fonts/font = ExtResource("2_vihoh")
+theme_override_font_sizes/font_size = 7
 placeholder_text = "Username/Email"
 alignment = 1
 
 [node name="PasswordInput" type="LineEdit" parent="MainContainer/LoginPanel/VBox"]
 layout_mode = 2
-theme_override_fonts/font = ExtResource("2_flad0")
-theme_override_font_sizes/font_size = 14
+theme_override_fonts/font = ExtResource("2_vihoh")
+theme_override_font_sizes/font_size = 7
 placeholder_text = "Password"
 alignment = 1
 
@@ -207,29 +208,29 @@ layout_mode = 2
 
 [node name="UsernameInput" type="LineEdit" parent="MainContainer/SignupPanel/VBox"]
 layout_mode = 2
-theme_override_fonts/font = ExtResource("2_flad0")
-theme_override_font_sizes/font_size = 14
+theme_override_fonts/font = ExtResource("2_vihoh")
+theme_override_font_sizes/font_size = 7
 placeholder_text = "Username"
 alignment = 1
 
 [node name="EmailInput" type="LineEdit" parent="MainContainer/SignupPanel/VBox"]
 layout_mode = 2
-theme_override_fonts/font = ExtResource("2_flad0")
-theme_override_font_sizes/font_size = 14
+theme_override_fonts/font = ExtResource("2_vihoh")
+theme_override_font_sizes/font_size = 7
 placeholder_text = "Email"
 alignment = 1
 
 [node name="PasswordInput" type="LineEdit" parent="MainContainer/SignupPanel/VBox"]
 layout_mode = 2
-theme_override_fonts/font = ExtResource("2_flad0")
-theme_override_font_sizes/font_size = 14
+theme_override_fonts/font = ExtResource("2_vihoh")
+theme_override_font_sizes/font_size = 7
 placeholder_text = "Password"
 alignment = 1
 
 [node name="ConfirmPasswordInput" type="LineEdit" parent="MainContainer/SignupPanel/VBox"]
 layout_mode = 2
-theme_override_fonts/font = ExtResource("2_flad0")
-theme_override_font_sizes/font_size = 14
+theme_override_fonts/font = ExtResource("2_vihoh")
+theme_override_font_sizes/font_size = 7
 placeholder_text = "Confirm Password"
 alignment = 1
 

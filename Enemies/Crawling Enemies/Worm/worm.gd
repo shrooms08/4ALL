@@ -14,7 +14,8 @@ var is_changing_direction: bool = false
 @onready var edge_detector: RayCast2D = $EdgeDetector if has_node("EdgeDetector") else null
 @onready var wall_detector: RayCast2D = $WallDetector if has_node("WallDetector") else null
 @onready var hitbox: Area2D = $Hitbox if has_node("Hitbox") else null
-@onready var animated_sprite_2d: AnimatedSprite2D = $AnimatedSprite2D
+@onready var animated_sprite_2d_2: AnimatedSprite2D = $AnimatedSprite2D
+@onready var animated_sprite_2d: AnimatedSprite2D = $AnimatedSprite2D2
 
 func _ready():
 	# Set worm stats
@@ -55,9 +56,9 @@ func crawl(delta):
 	# Simple back and forth movement
 	velocity.x = crawl_direction * move_speed
 	
-	# Flip sprite based on direction
+	# Flip sprite based on direction using scale instead of flip_h
 	if animated_sprite_2d:
-		animated_sprite_2d.flip_h = crawl_direction < 0
+		animated_sprite_2d.scale.x = abs(animated_sprite_2d.scale.x) * (-1 if crawl_direction < 0 else 1)
 	
 	# Play crawl animation
 	if animated_sprite_2d and animated_sprite_2d.sprite_frames:

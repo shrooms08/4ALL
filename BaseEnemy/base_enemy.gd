@@ -127,9 +127,9 @@ func _update_ai_state():
 	elif distance_to_player <= detection_range:
 		last_direction = (player.global_position - global_position).normalized()
 		
-		# Flip sprite
+		# Flip sprite using scale instead of flip_h
 		if sprite_2d and last_direction.x != 0:
-			sprite_2d.flip_h = last_direction.x < 0
+			sprite_2d.scale.x = abs(sprite_2d.scale.x) * (-1 if last_direction.x < 0 else 1)
 	else:
 		# Idle
 		last_direction = Vector2.ZERO

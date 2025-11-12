@@ -8,62 +8,59 @@ extends Node2D
 
 @export var game_musics: Array[AudioStream] = []
 
-# Static variable to remember if title has been shown
 static var has_shown_title: bool = false
+var selected_music: AudioStream = null
 
 func _ready():
+	# Give browser time to render the first frame
+	await get_tree().process_frame
+	
+	# Preload music early
+	if not game_musics.is_empty():
+		selected_music = game_musics.pick_random()
+		music_player.stream = selected_music
+	
+	# Small delay to let everything initialize
+	await get_tree().process_frame
+	
 	var start_chunk = level_generator.get_node_or_null("StartChunk")
 	if start_chunk:
 		start_chunk.player_left_start.connect(_on_player_left_start)
 
-
-#func _process(_delta):
-	#if Input.is_action_just_pressed("spawn_audience_enemy"):
-		#var spawn_pos = player.global_position + Vector2(randf_range(-200, 200), -100)
-		#audience_spawner.spawn_random_audience_enemy(spawn_pos)
-
-
 func _on_player_left_start():
 	player.set_physics_process(false)
-
-	# Only show title once
+	
 	if not has_shown_title:
 		has_shown_title = true
 		_show_title_with_overlay()
 	else:
-		# Skip title and start gameplay immediately
 		player.set_physics_process(true)
-		_play_random_music()
-
+		_play_music()
 
 func _show_title_with_overlay():
 	var overlay = $CanvasLayer/BlackOverlay
 	var title = $CanvasLayer/GameTitle
-
+	
 	overlay.visible = true
 	title.visible = true
 	overlay.modulate.a = 0.0
 	title.modulate.a = 0.0
-
+	
 	var tween = create_tween()
 	tween.tween_property(overlay, "modulate:a", 1.0, 0.5)
 	tween.tween_property(title, "modulate:a", 1.0, 0.5)
 	tween.tween_interval(2.0)
 	tween.tween_property(overlay, "modulate:a", 0.0, 0.5)
 	tween.tween_property(title, "modulate:a", 0.0, 0.5)
-
+	
 	await tween.finished
+	
 	overlay.visible = false
 	title.visible = false
-	player.set_physics_process(true)
-
-	_play_random_music()
-
-
-func _play_random_music():
-	if game_musics.is_empty():
-		return
 	
-	var random_music = game_musics.pick_random()
-	music_player.stream = random_music
-	music_player.play()
+	player.set_physics_process(true)
+	_play_music()
+
+func _play_music():
+	if music_player.stream:
+		music_player.play()

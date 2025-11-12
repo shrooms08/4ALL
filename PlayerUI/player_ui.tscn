@@ -1,10 +1,11 @@
-[gd_scene load_steps=10 format=3 uid="uid://nd3ktiqluxoo"]
+[gd_scene load_steps=11 format=3 uid="uid://nd3ktiqluxoo"]
 
 [ext_resource type="Script" uid="uid://s0plr6qvih6q" path="res://PlayerUI/player_ui.gd" id="1_7unqp"]
 [ext_resource type="Texture2D" uid="uid://0getlsqaqv0a" path="res://4all/4all Tileset/Tilemap/tile_0042.png" id="1_ote8t"]
 [ext_resource type="FontFile" uid="uid://h85ncfprpff4" path="res://4all/ARCADECLASSIC.TTF" id="3_bo84p"]
 [ext_resource type="Texture2D" uid="uid://egpqvlp84hny" path="res://4all/tile_0062.png" id="4_bo84p"]
 [ext_resource type="Texture2D" uid="uid://bsckv2eij343i" path="res://4all/tile_0001.png" id="5_wvxna"]
+[ext_resource type="FontFile" uid="uid://dtiujgu3wn57w" path="res://4all/Pixeled.ttf" id="6_wvxna"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_t5672"]
 font = ExtResource("3_bo84p")
@@ -19,14 +20,13 @@ font = ExtResource("3_bo84p")
 font_size = 14
 
 [sub_resource type="LabelSettings" id="LabelSettings_bo84p"]
-font = ExtResource("3_bo84p")
-font_size = 14
+font = ExtResource("6_wvxna")
+font_size = 7
 
 [node name="PlayerUI" type="CanvasLayer" groups=["player_ui"]]
 script = ExtResource("1_7unqp")
 
 [node name="HBoxContainer" type="HBoxContainer" parent="."]
-anchors_preset = -1
 offset_left = 12.0
 offset_top = -1.0
 offset_right = 40.0
@@ -44,7 +44,7 @@ text = "x "
 label_settings = SubResource("LabelSettings_t5672")
 
 [node name="HBoxContainer2" type="HBoxContainer" parent="."]
-anchors_preset = -1
+anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
 offset_left = -72.0
@@ -64,7 +64,7 @@ text = "0"
 label_settings = SubResource("LabelSettings_8l8wf")
 
 [node name="HBoxContainer3" type="HBoxContainer" parent="."]
-anchors_preset = -1
+anchors_preset = 4
 anchor_top = 0.5
 anchor_bottom = 0.5
 offset_left = 2.0

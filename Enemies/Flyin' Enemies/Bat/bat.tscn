@@ -190,7 +190,6 @@ radius = 89.005615
 
 [node name="Bat" instance=ExtResource("1_pxt7a")]
 scale = Vector2(0.8, 0.8)
-collision_mask = 11
 script = ExtResource("2_yeiw0")
 hover_height_variation = 20.0
 hover_speed = 2.0
@@ -199,10 +198,7 @@ deceleration = 300.0
 player_knockback_force = 300.0
 self_recoil_force = 200.0
 
-[node name="Sprite2D" parent="." index="0"]
-visible = false
-
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." index="1"]
+[node name="AnimatedSprite2D2" type="AnimatedSprite2D" parent="." index="1"]
 sprite_frames = SubResource("SpriteFrames_pboqd")
 animation = &"pursue"
 autoplay = "idle"

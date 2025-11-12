@@ -18,7 +18,7 @@ font_size = 42
 
 [sub_resource type="LabelSettings" id="LabelSettings_3pbqp"]
 font = ExtResource("2_tfo3q")
-font_size = 28
+font_size = 14
 
 [sub_resource type="LabelSettings" id="LabelSettings_q8wey"]
 font = ExtResource("2_tfo3q")
@@ -44,7 +44,6 @@ grow_vertical = 2
 color = Color(0.0026177876, 0.0026177883, 0.0026177873, 1)
 
 [node name="Panel" type="Panel" parent="."]
-visible = false
 anchors_preset = -1
 anchor_top = 0.09
 anchor_right = 1.0
@@ -118,7 +117,6 @@ flat = true
 alignment = 0
 
 [node name="StatsPanel" type="Panel" parent="."]
-visible = false
 anchors_preset = -1
 anchor_top = 0.094000004
 anchor_right = 1.0
@@ -185,7 +183,6 @@ label_settings = SubResource("LabelSettings_au66y")
 horizontal_alignment = 1
 
 [node name="ProfilePanel" type="Panel" parent="."]
-visible = false
 anchors_preset = -1
 anchor_top = 0.094000004
 anchor_right = 1.0

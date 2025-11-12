@@ -20,7 +20,8 @@ extends Node2D
 
 # Powerup system
 @export_group("Powerup Chunks")
-@export var powerup_spawn_interval: int = 10  # Spawn every N chunks
+@export var powerup_spawn_interval: int = 25  # INCREASED from 10 to 25 - spawn every 25 chunks
+@export var min_chunks_before_first_powerup: int = 15  # NEW - minimum chunks before first powerup appears
 @export var powerup_spawn_mode: SpawnMode = SpawnMode.INTERVAL
 @export var sync_with_game_manager: bool = true  # Sync with depth milestones
 
@@ -187,7 +188,7 @@ func _setup_chunk(chunk: Node2D) -> void:
 	if chunk.is_in_group("powerup_chunk"):
 		_connect_powerup_chunk(chunk)
 		powerup_chunks_spawned += 1
-		print("⚡ PowerupChunk spawned! (#", powerup_chunks_spawned, ")")
+		print("⚡ PowerupChunk spawned! (#", powerup_chunks_spawned, ") at total chunk:", total_chunks_spawned)
 
 
 func _connect_powerup_chunk(chunk: Node2D) -> void:
@@ -242,6 +243,10 @@ func _should_spawn_powerup_chunk() -> bool:
 	if not powerup_chunk_scene:
 		return false
 	
+	# NEW: Enforce minimum chunks before first powerup
+	if total_chunks_spawned < min_chunks_before_first_powerup:
+		return false
+	
 	match powerup_spawn_mode:
 		SpawnMode.INTERVAL:
 			return chunks_since_powerup >= powerup_spawn_interval
@@ -251,8 +256,9 @@ func _should_spawn_powerup_chunk() -> bool:
 			return false  # Handled via signal
 		
 		SpawnMode.RANDOM:
-			var chance = 0.1  # 10% chance
-			return randf() < chance and chunks_since_powerup >= 3
+			var chance = 0.05  # REDUCED from 0.1 to 0.05 - now 5% chance
+			var min_spacing = 8  # INCREASED from 3 to 8 - minimum chunks between powerups
+			return randf() < chance and chunks_since_powerup >= min_spacing
 		
 		_:
 			return false

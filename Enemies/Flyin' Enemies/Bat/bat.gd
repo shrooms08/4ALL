@@ -9,7 +9,8 @@ class_name FlyingEnemy
 @export var player_knockback_force: float = 300.0
 @export var self_recoil_force: float = 200.0
 
-@onready var animated_sprite_2d: AnimatedSprite2D = $AnimatedSprite2D
+@onready var animated_sprite_2d_2: AnimatedSprite2D = $AnimatedSprite2D
+@onready var animated_sprite_2d: AnimatedSprite2D = $AnimatedSprite2D2
 
 var hover_offset: float = 0.0
 var time_passed: float = 0.0
@@ -98,9 +99,9 @@ func move_toward_player(delta):
 	# Smooth acceleration toward target velocity
 	velocity = velocity.move_toward(target_velocity, acceleration * delta)
 	
-	# Flip sprite based on direction
+	# Flip sprite based on direction using scale instead of flip_h
 	if animated_sprite_2d and direction.x != 0:
-		animated_sprite_2d.flip_h = direction.x < 0
+		animated_sprite_2d.scale.x = abs(animated_sprite_2d.scale.x) * (-1 if direction.x < 0 else 1)
 
 func idle_behavior(delta):
 	# Gentle hovering in place

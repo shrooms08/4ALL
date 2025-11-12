@@ -20,3 +20,4 @@ start_chunk_scene = ExtResource("2_y65wu")
 chunk_scenes = Array[PackedScene]([ExtResource("2_0rgcj"), ExtResource("3_bx2d1"), ExtResource("4_ro4u5"), ExtResource("9_s6xof"), ExtResource("10_o1ggt"), ExtResource("11_1hyd7")])
 special_chunk_scenes = Array[PackedScene]([ExtResource("5_hbwxo"), ExtResource("6_twils"), ExtResource("7_twils"), ExtResource("8_oxork")])
 powerup_chunk_scene = ExtResource("13_s6xof")
+min_chunks_before_first_powerup = 20

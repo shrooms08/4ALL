@@ -77,19 +77,8 @@ script = ExtResource("2_3284o")
 crawl_speed = 30.0
 contact_damage = 5.0
 direction_change_delay = 0.5
-max_health = 30.0
-move_speed = 300.0
-damage = 10.0
-knockback_resistance = 0.5
-detection_range = 200.0
-attack_range = 50.0
-attack_cooldown = 1.0
-exp_value = 10
 
-[node name="Sprite2D" parent="." index="0"]
-visible = false
-
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." index="1"]
+[node name="AnimatedSprite2D2" type="AnimatedSprite2D" parent="." index="1"]
 sprite_frames = SubResource("SpriteFrames_71ecj")
 animation = &"crawl"
 autoplay = "crawl"
