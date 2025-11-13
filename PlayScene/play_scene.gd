@@ -46,6 +46,14 @@ func _show_title_with_overlay():
 	overlay.modulate.a = 0.0
 	title.modulate.a = 0.0
 	
+	# Pre-warm the audio stream during the title screen
+	if music_player.stream:
+		music_player.volume_db = -80  # Silent
+		music_player.play()
+		await get_tree().create_timer(0.1).timeout
+		music_player.stop()
+		music_player.volume_db = 0  # Restore volume
+	
 	var tween = create_tween()
 	tween.tween_property(overlay, "modulate:a", 1.0, 0.5)
 	tween.tween_property(title, "modulate:a", 1.0, 0.5)
@@ -62,5 +70,5 @@ func _show_title_with_overlay():
 	_play_music()
 
 func _play_music():
-	if music_player.stream:
+	if music_player.stream and not music_player.playing:
 		music_player.play()

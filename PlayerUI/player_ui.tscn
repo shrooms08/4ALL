@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://nd3ktiqluxoo"]
+[gd_scene load_steps=13 format=3 uid="uid://nd3ktiqluxoo"]
 
 [ext_resource type="Script" uid="uid://s0plr6qvih6q" path="res://PlayerUI/player_ui.gd" id="1_7unqp"]
 [ext_resource type="Texture2D" uid="uid://0getlsqaqv0a" path="res://4all/4all Tileset/Tilemap/tile_0042.png" id="1_ote8t"]
@@ -101,10 +101,11 @@ size_flags_horizontal = 8
 label_settings = SubResource("LabelSettings_bo84p")
 
 [node name="SessionInfo" type="VBoxContainer" parent="."]
-offset_left = 8.0
-offset_top = 48.0
-offset_right = 200.0
-offset_bottom = 160.0
+visible = false
+offset_left = 7.0
+offset_top = 73.0
+offset_right = 199.0
+offset_bottom = 185.0
 size_flags_horizontal = 2
 theme_override_constants/separation = 0
 
@@ -115,7 +116,7 @@ label_settings = SubResource("LabelSettings_session")
 
 [node name="CoinsLabel" type="Label" parent="SessionInfo"]
 layout_mode = 2
-text = "Coins: --"
+text = "Coins: "
 label_settings = SubResource("LabelSettings_session")
 
 [node name="ScoreLabel" type="Label" parent="SessionInfo"]
@@ -135,10 +136,9 @@ label_settings = SubResource("LabelSettings_session")
 
 [node name="ArenaStatusLabel" type="Label" parent="SessionInfo"]
 layout_mode = 2
-text = "Arena: --"
+text = "Arena: "
 label_settings = SubResource("LabelSettings_session")
 
 [node name="ServerStatusLabel" type="Label" parent="SessionInfo"]
 layout_mode = 2
-text = ""
 label_settings = SubResource("LabelSettings_error")
